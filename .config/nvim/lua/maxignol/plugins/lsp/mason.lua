@@ -12,16 +12,25 @@ return {
             callback = function(event)
                 local opts = { buffer = event.buf }
 
-                vim.keymap.set('n', 'gk', '<cmd>lua vim.lsp.buf.hover()<cr>', opts)
-                vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>', opts)
-                vim.keymap.set('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>', opts)
-                vim.keymap.set('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<cr>', opts)
-                vim.keymap.set('n', 'go', '<cmd>lua vim.lsp.buf.type_definition()<cr>', opts)
-                vim.keymap.set('n', 'gr', '<cmd>lua vim.lsp.buf.references()<cr>', opts)
-                vim.keymap.set('n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<cr>', opts)
-                vim.keymap.set('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<cr>', opts)
-                vim.keymap.set({ 'n', 'x' }, '<F3>', '<cmd>lua vim.lsp.buf.format({async = true})<cr>', opts)
-                vim.keymap.set('n', '<F4>', '<cmd>lua vim.lsp.buf.code_action()<cr>', opts)
+                local function organize_imports()
+                    vim.cmd("w")
+                    vim.lsp.buf.format({ async = true })
+                    local filepath = vim.api.nvim_buf_get_name(0)
+                    if filepath:match("%.py$") then
+                        vim.fn.system('ruff check --select I --fix ' .. filepath)
+                    end
+                    vim.cmd('edit')
+                end
+                vim.keymap.set('n', 'gk', vim.lsp.buf.hover, opts)
+                vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+                vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+                vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+                vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
+                vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+                vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
+                vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, opts)
+                vim.keymap.set({ 'n', 'x' }, '<F3>', organize_imports, opts)
+                vim.keymap.set('n', '<F4>', vim.lsp.buf.code_action, opts)
             end,
         })
 
