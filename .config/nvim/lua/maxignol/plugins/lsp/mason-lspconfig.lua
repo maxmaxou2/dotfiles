@@ -7,7 +7,6 @@ return {
                     local lspconfig = require('lspconfig')
                     local opts = {}
                     if server_name == "pylsp" then
-                        print("Ici")
                         opts = {
                             settings = {
                                 pylsp = {
