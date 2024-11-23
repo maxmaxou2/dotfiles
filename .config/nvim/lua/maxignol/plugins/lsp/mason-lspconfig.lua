@@ -4,7 +4,24 @@ return {
         require('mason-lspconfig').setup({
             handlers = {
                 function(server_name)
-                    require('lspconfig')[server_name].setup({})
+                    local lspconfig = require('lspconfig')
+                    local opts = {}
+                    if server_name == "pylsp" then
+                        print("Ici")
+                        opts = {
+                            settings = {
+                                pylsp = {
+                                    plugins = {
+                                        pycodestyle = { enabled = false },
+                                        mccabe = { enabled = false },
+                                        pyflakes = { enabled = false },
+                                        ruff = { enabled = true },
+                                    },
+                                },
+                            },
+                        }
+                    end
+                    lspconfig[server_name].setup(opts)
                 end,
             }
         })
