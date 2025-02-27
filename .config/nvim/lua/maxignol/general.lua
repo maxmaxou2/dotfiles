@@ -4,7 +4,7 @@ local opt = vim.opt
 
 --File Reloading
 o.autoread = true
---o.scrolloff = 999
+o.scrolloff = 7
 
 --Line Numbering
 vim.wo.relativenumber = true

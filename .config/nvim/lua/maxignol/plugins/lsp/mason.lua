@@ -13,8 +13,8 @@ return {
                 local opts = { buffer = event.buf }
 
                 local function organize_imports()
-                    vim.cmd("w")
                     vim.lsp.buf.format({ async = true })
+                    vim.cmd("w")
                     local filepath = vim.api.nvim_buf_get_name(0)
                     if filepath:match("%.py$") then
                         vim.fn.system('ruff check --select I --fix ' .. filepath)

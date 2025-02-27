@@ -40,3 +40,11 @@ map('n', '<C-i>', '<C-i>')
 -- Breakpoint made easy
 map('n', '<leader>bp', 'obreakpoint()<ESC>')
 map('n', '<leader>bd', 'o__import__("dagster")._utils.forked_pdb.ForkedPdb().set_trace()<ESC>')
+
+-- Moving around
+map("n", "<C-d>", "<C-d>zz")
+map("n", "<C-u>", "<C-u>zz")
+
+-- In new split actions
+map('n', '<leader>gd', '<C-w>v<C-l>gd', { noremap = false, silent = true })
+map('n', '<leader>gg', '<C-w>v<C-l>gg', { noremap = false, silent = true })
