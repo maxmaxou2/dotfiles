@@ -17,3 +17,4 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Load plugins configs
 require("lazy").setup({ { import = "maxignol.plugins" }, { import = "maxignol.plugins.lsp" } })
+-- require('telescope').load_extension("fzf")
