@@ -13,13 +13,13 @@ return {
                 local opts = { buffer = event.buf }
 
                 local function organize_imports()
-                    vim.lsp.buf.format({ async = true })
+                    vim.lsp.buf.format({ async = false })
                     vim.cmd("w")
                     local filepath = vim.api.nvim_buf_get_name(0)
                     if filepath:match("%.py$") then
                         vim.fn.system('ruff check --select I --fix ' .. filepath)
                     end
-                    vim.cmd('edit')
+                    vim.cmd('e')
                 end
                 vim.keymap.set('n', 'gk', vim.lsp.buf.hover, opts)
                 vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)

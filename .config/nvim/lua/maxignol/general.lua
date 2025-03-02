@@ -21,3 +21,6 @@ opt.expandtab = true
 --Smart search
 opt.ignorecase = true  -- Ignore case when searching
 opt.smartcase = true   -- Override 'ignorecase' if search contains uppercase letters
+
+-- Recommended by avante.nvim
+vim.opt.laststatus = 3
