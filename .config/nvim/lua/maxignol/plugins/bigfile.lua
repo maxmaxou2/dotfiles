@@ -1,4 +1,1 @@
-return {
-    "lunarVim/bigfile.nvim",
-    opts = {},
-}
+return {"LunarVim/bigfile.nvim"}

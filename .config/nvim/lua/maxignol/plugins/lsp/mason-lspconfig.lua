@@ -27,23 +27,23 @@ return {
                 end,
             }
         })
-
-        -- JSON SPEC
-        local max_filesize = 5 * 1024 -- 5 KB
-        vim.api.nvim_create_augroup('JsonSyntax', { clear = true })
-        vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile', 'BufReadPost' }, {
-            pattern = "*.json$",
-            callback = function()
-                local file = vim.fn.expand("%:p")
-                local filesize = vim.fn.getfsize(file)
-                if filesize > max_filesize then
-                    vim.api.nvim_echo({{"File too large, disabling syntax", "WarningMsg"}}, false, {})
-                    vim.cmd("setlocal syntax=off")
-                else
-                    vim.cmd("setlocal syntax=json")
-                end
-            end,
-            group = 'JsonSyntax',
-        })
+        --
+        -- -- JSON SPEC
+        -- local max_filesize = 5 * 1024 -- 5 KB
+        -- vim.api.nvim_create_augroup('JsonSyntax', { clear = true })
+        -- vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile', 'BufReadPost' }, {
+        --     pattern = "*.json$",
+        --     callback = function()
+        --         local file = vim.fn.expand("%:p")
+        --         local filesize = vim.fn.getfsize(file)
+        --         if filesize > max_filesize then
+        --             vim.api.nvim_echo({{"File too large, disabling syntax", "WarningMsg"}}, false, {})
+        --             vim.cmd("setlocal syntax=off")
+        --         else
+        --             vim.cmd("setlocal syntax=json")
+        --         end
+        --     end,
+        --     group = 'JsonSyntax',
+        -- })
     end
 }

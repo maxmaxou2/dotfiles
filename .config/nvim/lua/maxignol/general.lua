@@ -11,16 +11,16 @@ vim.wo.relativenumber = true
 vim.wo.number = true
 
 --Indenting
-g.python_recommended_style = 0  
-g.rust_recommended_style= 0 
+g.python_recommended_style = 0
+g.rust_recommended_style = 0
 opt.tabstop = 4
 opt.smartindent = true
 opt.shiftwidth = 4
 opt.expandtab = true
 
 --Smart search
-opt.ignorecase = true  -- Ignore case when searching
-opt.smartcase = true   -- Override 'ignorecase' if search contains uppercase letters
+opt.ignorecase = true -- Ignore case when searching
+opt.smartcase = true  -- Override 'ignorecase' if search contains uppercase letters
 
 -- Recommended by avante.nvim
 vim.opt.laststatus = 3
