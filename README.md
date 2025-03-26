@@ -4,6 +4,11 @@ Here are my dotfiles, I will be adding to it and explaining along the way.
 
 A journey begins.
 
+## Todo List
+
+- Add tmux, tmuxp dotfiles
+- Add scripts calling general commands for setup
+
 ## Neovim Configuration
 
 My Neovim setup is designed for a modern development experience with a focus on productivity and ergonomics. Here's a breakdown of the key plugins and their purposes:
