@@ -52,11 +52,11 @@ return {
             end,
             fold_virt_text_handler = handler,
         })
-        vim.keymap.set("n", "wR", ufo.openAllFolds)
-        vim.keymap.set("n", "<leader>w&", fold_to_level(0))
-        vim.keymap.set("n", "<leader>wé", fold_to_level(1))
-        vim.keymap.set("n", '<leader>w"', fold_to_level(2))
-        vim.keymap.set("n", "<leader>w'", fold_to_level(3))
-        vim.keymap.set("n", "<leader>w(", fold_to_level(4))
+        vim.keymap.set("n", "zR", ufo.openAllFolds)
+        vim.keymap.set("n", "<leader>z1", fold_to_level(0))
+        vim.keymap.set("n", "<leader>z2", fold_to_level(1))
+        vim.keymap.set("n", '<leader>z3', fold_to_level(2))
+        vim.keymap.set("n", "<leader>z4", fold_to_level(3))
+        vim.keymap.set("n", "<leader>z5", fold_to_level(4))
     end,
 }

@@ -30,8 +30,8 @@ local nv_key_swaps = {
     ['_'] = '-',
 }
 local opts = { noremap = true, silent = true }
-for key, swap in pairs(nv_key_swaps) do
-    vim.api.nvim_set_keymap('n', key, swap, opts)
-    vim.api.nvim_set_keymap('v', key, swap, opts)
-    vim.api.nvim_set_keymap('o', key, swap, opts)
-end
+-- for key, swap in pairs(nv_key_swaps) do
+--     vim.api.nvim_set_keymap('n', key, swap, opts)
+--     vim.api.nvim_set_keymap('v', key, swap, opts)
+--     vim.api.nvim_set_keymap('o', key, swap, opts)
+-- end
