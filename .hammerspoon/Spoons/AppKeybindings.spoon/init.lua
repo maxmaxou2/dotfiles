@@ -14,7 +14,7 @@ function obj:init()
         ["8"] = "Slack",
         ["-"] = "Spotify",
         ["="] = "Notion",
-        ["9"] = "Safari",
+        ["9"] = "Brave Browser",
         ["\\"] = "Karabiner-Elements",
     }
 
