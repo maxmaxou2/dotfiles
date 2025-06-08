@@ -4,9 +4,33 @@ Here are my dotfiles, I will be adding to it and explaining along the way.
 
 A journey begins.
 
+## Setup/
+
+### Dependencies
+```
+brew install git tmux tmuxp hammerspoon neovim
+brew install --cask karabiner-elements
+```
+
+### Symlinks
+```
+ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
+ln -s ~/dotfiles/.hammerspoon ~/.hammerspoon
+ln -s ~/dotfiles/.tmux ~/.tmux
+
+ln -s ~/dotfiles/.config/nvim ~/.config/nvim
+ln -s ~/dotfiles/.config/karabiner ~/.config/karabiner
+```
+
+### Additional steps
+
+- Karabiner :
+    - Open Karabiner-Elements from your Applications folder.
+    - Grant necessary permissions in System Preferences > Security & Privacy (Input Monitoring and Accessibility). 
+
+
 ## Todo List/
 
-- Add tmux, tmuxp dotfiles
 - Add scripts calling general commands for setup
 
 ## Neovim Configuration
@@ -60,7 +84,7 @@ My Neovim setup is designed for a modern development experience with a focus on 
 
 This configuration is continuously evolving as I discover new tools and better ways to work with Neovim. Feel free to explore and adapt any parts that you find useful!
 
-## Hammerspoon Configuration
+## Hammerspoon Configuration/
 
 My Hammerspoon setup includes several productivity-enhancing features:
 

@@ -21,12 +21,13 @@ return {
                     end
                     vim.cmd('e')
                 end
+                -- Those are already handled by Telescope
+                -- vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+                -- vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
                 vim.keymap.set('n', 'gk', vim.lsp.buf.hover, opts)
-                vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
                 vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
                 vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
                 vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
-                vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
                 vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
                 vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, opts)
                 vim.keymap.set({ 'n', 'x' }, '<F3>', organize_imports, opts)

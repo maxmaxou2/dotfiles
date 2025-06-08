@@ -22,7 +22,7 @@ return {
             builtin.grep_string { search = vim.fn.input("Grep > ") }
         end)
         vim.keymap.set('n', '<leader>pf', builtin.live_grep, { noremap = true, silent = true })
-        vim.keymap.set('n', 'gr', builtin.lsp_references, { noremap = true, silent = true })
+        vim.keymap.set('n', 'gr', '<cmd>Telescope lsp_references<CR>', { noremap = true, silent = true })
         vim.keymap.set('n', 'gd', builtin.lsp_definitions, { noremap = true, silent = true })
         vim.keymap.set('n', '<leader>w', builtin.current_buffer_fuzzy_find, { noremap = true, silent = true })
     end,

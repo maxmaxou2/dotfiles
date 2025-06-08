@@ -56,3 +56,9 @@ vim.keymap.set('n', '<C-w><C-q>', function()
   vim.cmd('quit')      -- Fermer le split actuel
   vim.cmd('TmuxNavigateLeft')      -- Fermer le split actuel
 end, { noremap = true, silent = true })
+
+-- Resize splits using Ctrl + Shift + h/j/k/l
+map('n', '<C-Left>', ':vertical resize -2<CR>')
+map('n', '<C-Right>', ':vertical resize +2<CR>')
+map('n', '<C-Down>', ':resize +2<CR>')
+map('n', '<C-Up>', ':resize -2<CR>')
