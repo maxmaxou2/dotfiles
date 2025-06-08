@@ -15,9 +15,12 @@ return {
     },
     config = function()
         local builtin = require("telescope.builtin")
-        vim.keymap.set('n', '<C-p>', builtin.find_files, { noremap = true, silent = true })
-        -- Using only find files instead of git
-        -- vim.keymap.set('n', '<C-p>', builtin.git_files, {})
+        vim.keymap.set('n', '<C-p>', function()
+            local ok = pcall(require('telescope.builtin').git_files, { show_untracked = true })
+            if not ok then
+                require('telescope.builtin').find_files()
+            end
+        end, { noremap = true, silent = true })
         vim.keymap.set('n', '<leader>ps', function()
             builtin.grep_string { search = vim.fn.input("Grep > ") }
         end)
