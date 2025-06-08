@@ -24,7 +24,7 @@ function obj:init()
     local CHAR_W = 17
     local CHAR_H = 30
     local OFFSET = 10
-    local BOX_SIZE = OUTPUT_SIZE * CHAR_W
+    local BOX_SIZE = (OUTPUT_SIZE+1) * CHAR_W
     local BOX_HEIGHT = CHAR_H + OFFSET * 2
 
     local function updateDisplay(text)
@@ -75,6 +75,7 @@ function obj:init()
         ["\27"] = "esc",
         ["\t"]  = "⇥",
         ["\n"]  = "⏎",
+        ["\r"]  = "⏎",
         ["\127"] = "⌫",
         [" "] = "␣",
         ["shift"] = "⇧",
