@@ -64,15 +64,65 @@ function obj:init()
         displayCanvas:show()
     end
 
+    function utf8_right(str, n)
+        local len = utf8.len(str)
+        if not len or len <= n then return str end
+        local startByte = utf8.offset(str, len - n + 1)
+        return str:sub(startByte)
+    end
+
+    local keyCodes = {
+        ["\27"] = "esc",
+        ["\t"]  = "⇥",
+        ["\n"]  = "⏎",
+        ["\127"] = "⌫",
+        [" "] = "␣",
+        ["shift"] = "⇧",
+        ["cmd"] = "⌘",
+        ["ctrl"] = "⌃",
+        ["alt"] = "⌥",
+        ["return"] = "↩",
+        ["delete"] = "⌫",
+        ["up"] = "↑",
+        ["down"] = "↓",
+        ["left"] = "←",
+        ["right"] = "→",
+        ["capslock"] = "⇪"
+    }
+    local modifiers = { "ctrl", "alt", "cmd", "fn" }
     eventtap = hs.eventtap.new({
         hs.eventtap.event.types.keyDown,
         hs.eventtap.event.types.flagsChanged,
     }, function(event)
-        output = output .. hs.keycodes.map[event:getKeyCode()] .. " "
-        if #output > OUTPUT_SIZE then
-            output = output:sub(-OUTPUT_SIZE)
+        local key = event:getCharacters(true)
+        if event:getType() == hs.eventtap.event.types.keyDown then
+            local flags = event:getFlags()
+
+            -- Modifiers handler (special case for escape)
+            local parts = {}
+            local has_modifier = key == "\27"
+            for _, mod in ipairs(modifiers) do
+                if flags[mod] then
+                    has_modifier = true
+                    table.insert(parts, keyCodes[mod] or mod)
+                end
+            end
+            table.insert(parts, keyCodes[key] or key)
+
+            -- Separate modified sequences from plain keys
+            local text = table.concat(parts, "")
+            if has_modifier then
+                if output:sub(-1) ~= " " then
+                    text = " " .. text
+                end
+                output = output .. text .. " "
+            else
+                output = output .. text
+            end
+            output = utf8_right(output, OUTPUT_SIZE)
+            updateDisplay(output)
         end
-        updateDisplay(output)
+
         return false
     end)
 
