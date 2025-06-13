@@ -48,6 +48,7 @@ map("n", "<C-u>", "<C-u>zz")
 -- In new split actions
 map('n', '<leader>gd', '<C-w>v<C-l>gd', { noremap = false, silent = true })
 map('n', '<leader>gg', '<C-w>v<C-l>gg', { noremap = false, silent = true })
+map('n', '<leader>gr', '<C-w>v<C-l>gr', { noremap = false, silent = true })
 vim.keymap.set('n', '<C-w>q', function()
   vim.cmd('quit')      -- Fermer le split actuel
   vim.cmd('TmuxNavigateLeft')      -- Fermer le split actuel
