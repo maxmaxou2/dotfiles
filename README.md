@@ -17,6 +17,7 @@ brew install --cask karabiner-elements
 ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
 ln -s ~/dotfiles/.hammerspoon ~/.hammerspoon
 ln -s ~/dotfiles/.tmux ~/.tmux
+ln -s ~/dotfiles/.ssh/agent.sh ~/.ssh/agent.sh
 
 ln -s ~/dotfiles/.config/nvim ~/.config/nvim
 ln -s ~/dotfiles/.config/karabiner ~/.config/karabiner

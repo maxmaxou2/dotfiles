@@ -50,12 +50,12 @@ map('n', '<leader>gd', '<C-w>v<C-l>gd', { noremap = false, silent = true })
 map('n', '<leader>gg', '<C-w>v<C-l>gg', { noremap = false, silent = true })
 map('n', '<leader>gr', '<C-w>v<C-l>gr', { noremap = false, silent = true })
 vim.keymap.set('n', '<C-w>q', function()
-  vim.cmd('quit')      -- Fermer le split actuel
-  vim.cmd('TmuxNavigateLeft')      -- Fermer le split actuel
+    vim.cmd('quit')           -- Fermer le split actuel
+    vim.cmd('TmuxNavigateLeft') -- Fermer le split actuel
 end, { noremap = true, silent = true })
 vim.keymap.set('n', '<C-w><C-q>', function()
-  vim.cmd('quit')      -- Fermer le split actuel
-  vim.cmd('TmuxNavigateLeft')      -- Fermer le split actuel
+    vim.cmd('quit')           -- Fermer le split actuel
+    vim.cmd('TmuxNavigateLeft') -- Fermer le split actuel
 end, { noremap = true, silent = true })
 
 -- Resize splits using Ctrl + Shift + h/j/k/l
@@ -63,3 +63,17 @@ map('n', '<C-Left>', ':vertical resize -2<CR>')
 map('n', '<C-Right>', ':vertical resize +2<CR>')
 map('n', '<C-Down>', ':resize +2<CR>')
 map('n', '<C-Up>', ':resize -2<CR>')
+
+-- Copy filepath, filename and parent directory to press papier
+vim.keymap.set('n', '<leader>yp', function()
+    vim.fn.setreg('+', vim.fn.expand('%:p'))
+    print('Chemin complet copié !')
+end, { desc = 'Copier chemin absolu' })
+vim.keymap.set('n', '<leader>yn', function()
+    vim.fn.setreg('+', vim.fn.expand('%:t'))
+    print('Nom du fichier copié !')
+end, { desc = 'Copier nom du fichier' })
+vim.keymap.set('n', '<leader>yd', function()
+    vim.fn.setreg('+', vim.fn.fnamemodify(vim.fn.expand('%:p:h'), ':p'))
+    print('Dossier parent copié !')
+end, { desc = 'Copier dossier parent' })

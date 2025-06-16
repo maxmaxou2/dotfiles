@@ -241,3 +241,9 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+# If inside tmux, sync SSH agent env from tmux global env
+if [ -n "$TMUX" ]; then
+  eval "$(tmux show-environment -s SSH_AUTH_SOCK 2>/dev/null)"
+  eval "$(tmux show-environment -s SSH_AGENT_PID 2>/dev/null)"
+fi
