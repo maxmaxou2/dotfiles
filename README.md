@@ -6,10 +6,11 @@ A journey begins.
 
 ## Setup/
 
-### Dependencies
+### HomeBrew related
 ```
-brew install git tmux tmuxp hammerspoon neovim
-brew install --cask karabiner-elements
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+ln -s ~/dotfiles/.Brewfile ~/.Brewfile
+brew bundle --global
 ```
 
 ### Symlinks
@@ -28,6 +29,12 @@ ln -s ~/dotfiles/.config/karabiner ~/.config/karabiner
 - Karabiner :
     - Open Karabiner-Elements from your Applications folder.
     - Grant necessary permissions in System Preferences > Security & Privacy (Input Monitoring and Accessibility). 
+
+- Postgres related :
+```
+createuser --superuser $USER -U postgres
+createdb $USER -U $USER
+```
 
 
 ## Todo List/
