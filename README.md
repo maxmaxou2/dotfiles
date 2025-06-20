@@ -15,17 +15,7 @@ brew bundle --global
 
 ### Symlinks
 ```
-ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
-ln -sf ~/dotfiles/.hammerspoon ~/.hammerspoon
-ln -sf ~/dotfiles/.tmux ~/.tmux
-ln -sf ~/dotfiles/.ssh/agent.sh ~/.ssh/agent.sh
-ln -sf ~/dotfiles/.condarc ~/.condarc
-ln -sf ~/dotfiles/.pdbrc ~/.pdbrc
-ln -sf ~/dotfiles/.pdbrc.py ~/.pdbrc.py
-
-ln -sf ~/dotfiles/.config/nvim ~/.config/nvim
-ln -sf ~/dotfiles/.config/karabiner ~/.config/karabiner
-ln -sf ~/dotfiles/.config/rich/rich.ini ~/.config/rich/rich.ini
+stow conda hammerspoon karabiner nvim pdb rich ssh tmux zsh
 ```
 
 ### Additional steps

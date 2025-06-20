@@ -2,6 +2,8 @@ tap "homebrew/services"
 tap "zitadel/tap"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
+# Symlink farm manager
+brew "stow"
 # Cross-platform make
 brew "cmake"
 # More intuitive version of du in rust
