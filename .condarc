@@ -1,0 +1,8 @@
+create_default_packages:
+  - ipython
+  - pdbpp
+  - python-devtools
+channels:
+  - conda-forge
+  - defaults
+auto_activate_base: false

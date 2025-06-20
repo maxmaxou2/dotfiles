@@ -22,6 +22,8 @@ ln -s ~/dotfiles/.ssh/agent.sh ~/.ssh/agent.sh
 
 ln -s ~/dotfiles/.config/nvim ~/.config/nvim
 ln -s ~/dotfiles/.config/karabiner ~/.config/karabiner
+ln -s ~/dotfiles/.condarc ~/.condarc
+ln -s ~/dotfiles/.pdbrc ~/.pdbrc
 ```
 
 ### Additional steps
