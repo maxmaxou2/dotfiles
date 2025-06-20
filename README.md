@@ -15,15 +15,17 @@ brew bundle --global
 
 ### Symlinks
 ```
-ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
-ln -s ~/dotfiles/.hammerspoon ~/.hammerspoon
-ln -s ~/dotfiles/.tmux ~/.tmux
-ln -s ~/dotfiles/.ssh/agent.sh ~/.ssh/agent.sh
+ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
+ln -sf ~/dotfiles/.hammerspoon ~/.hammerspoon
+ln -sf ~/dotfiles/.tmux ~/.tmux
+ln -sf ~/dotfiles/.ssh/agent.sh ~/.ssh/agent.sh
+ln -sf ~/dotfiles/.condarc ~/.condarc
+ln -sf ~/dotfiles/.pdbrc ~/.pdbrc
+ln -sf ~/dotfiles/.pdbrc.py ~/.pdbrc.py
 
-ln -s ~/dotfiles/.config/nvim ~/.config/nvim
-ln -s ~/dotfiles/.config/karabiner ~/.config/karabiner
-ln -s ~/dotfiles/.condarc ~/.condarc
-ln -s ~/dotfiles/.pdbrc ~/.pdbrc
+ln -sf ~/dotfiles/.config/nvim ~/.config/nvim
+ln -sf ~/dotfiles/.config/karabiner ~/.config/karabiner
+ln -sf ~/dotfiles/.config/rich/rich.ini ~/.config/rich/rich.ini
 ```
 
 ### Additional steps
@@ -120,4 +122,74 @@ My Hammerspoon setup includes several productivity-enhancing features:
 
 This setup ensures a smooth workflow when transitioning between single and multi-monitor setups while providing quick access to applications and keyboard input visualization when needed.
 
+## Keymap Cheatsheet
 
+### Neovim Keymaps
+
+#### General
+- `<Space>` - Leader key
+- `<leader>e` - Open file explorer (Ex)
+- `<C-s>` - Save file (works in normal, insert, and visual modes)
+
+#### Window Management
+- `<C-Up/Down/Left/Right>` - Resize windows
+- `<C-w>q` or `<C-w><C-q>` - Close split and navigate left (Tmux aware)
+- `<leader>gd` - Open definition in vertical split
+- `<leader>gg` - Open references in vertical split
+- `<leader>gr` - Open LSP references in vertical split
+
+#### Clipboard Operations
+- `<leader>y` - Copy to system clipboard
+- `<leader>Y` - Copy line to system clipboard (from cursor to end)
+- `<leader>yy` - Copy whole line to system clipboard
+- `<leader>p` - Paste from system clipboard
+- `<leader>P` - Paste before from system clipboard
+- `<leader>yp` - Copy full file path to clipboard
+- `<leader>yn` - Copy filename to clipboard
+- `<leader>yd` - Copy parent directory path to clipboard
+
+#### Navigation
+- `<C-d>` - Scroll down (centered)
+- `<C-u>` - Scroll up (centered)
+- `<C-j>` - Go down a pane (Tmux aware)
+- `<C-k>` - Go up a pane (Tmux aware)
+- `<C-h>` - Go left a pane (Tmux aware)
+- `<C-l>` - Go right a pane (Tmux aware)
+
+#### Indentation
+- `<S-Tab>` - Unindent (normal and insert mode)
+- `<Tab>` - Indent (visual mode)
+- `<S-Tab>` - Unindent (visual mode)
+
+#### Development
+- `<leader>bp` - Insert Python breakpoint
+- `<leader>bd` - Insert Dagster debugger breakpoint
+- `<leader>T` - Launch nearest test, test file or test class
+- `<leader>S` - Launch nearest test, test file or test class while updating snapshots
+
+#### Telescope (Fuzzy Finder)
+- `<C-p>` - Find files (git files if in repo, all files otherwise)
+- `<leader>ps` - Grep with input prompt
+- `<leader>pf` - Live grep
+- `<leader>w` - Fuzzy find in current buffer
+- `gr` - Find LSP references
+- `gd` - Go to LSP definition
+- `<leader>gr` - Go to LSP references in a new v-split
+- `<leader>gd` - Go to LSP definition in a new v-split
+
+#### Diffview
+- `<leader>dv` - Opens up telescope git branches listing and show diffview for the selected, quit diffview if already opened
+- `<leader>df` - Toggles file tree display
+
+### Hammerspoon Keymaps
+
+#### Window Management
+- `ctrl + cmd + F` - Make focused window fullscreen (custom fullscreen)
+
+#### Application Management
+- `ctrl + cmd + k` - Toggle key logger display
+- `ctrl + cmd + m` - Screen swapping functionality
+
+Note: Additional Hammerspoon keybindings for application quick launch (ctrl + cmd + [number]) are configured but not explicitly listed in the configuration files.
+
+This cheatsheet will be continuously updated as new keymaps are added to my configuration.

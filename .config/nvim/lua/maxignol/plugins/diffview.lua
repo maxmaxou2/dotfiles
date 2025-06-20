@@ -10,7 +10,28 @@ return {
                 if view then
                     vim.cmd("DiffviewClose")
                 else
-                    vim.cmd("DiffviewOpen")
+                    require('telescope.builtin').git_branches({
+                        prompt_title = "Diff with branch",
+                        attach_mappings = function(_, map)
+                            local actions = require('telescope.actions')
+                            local state = require('telescope.actions.state')
+
+                            local select_and_diff = function(prompt_bufnr)
+                                local selection = state.get_selected_entry()
+                                actions.close(prompt_bufnr)
+
+                                if selection and selection.value then
+                                    vim.cmd("DiffviewOpen " .. selection.value)
+                                else
+                                    vim.notify("No branch selected", vim.log.levels.WARN)
+                                end
+                            end
+
+                            map('i', '<CR>', select_and_diff)
+                            map('n', '<CR>', select_and_diff)
+                            return true
+                        end,
+                    })
                 end
             end,
             desc = "Toggle Diffview",
