@@ -12,6 +12,8 @@ function obj:init()
     local appHotkeys = {
         ["0"] = "Ghostty",
         ["8"] = "Slack",
+        ["7"] = "Mail",
+        ["]"] = "Whatsapp",
         ["-"] = "Spotify",
         ["="] = "Notion",
         ["9"] = "Brave Browser",
