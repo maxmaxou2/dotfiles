@@ -17,6 +17,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Load plugins configs
 require("lazy").setup({
+	{ import = "maxignol.plugins.ui" },
 	{ import = "maxignol.plugins" },
 	{ import = "maxignol.plugins.ai" },
 	{ import = "maxignol.plugins.lsp" },

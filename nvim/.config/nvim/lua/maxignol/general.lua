@@ -19,12 +19,12 @@ g.python_recommended_style = 0
 g.rust_recommended_style = 0
 opt.tabstop = 4
 opt.smartindent = true
+opt.softtabstop = 4
 opt.shiftwidth = 4
 opt.expandtab = true
 
--- Recommended by avante.nvim
-opt.laststatus = 3
 opt.swapfile = false
+vim.o.laststatus = 2  -- Always show statusline
 
 -- Diagnostic formatting
 vim.diagnostic.config({
