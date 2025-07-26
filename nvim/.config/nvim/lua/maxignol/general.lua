@@ -23,5 +23,16 @@ opt.shiftwidth = 4
 opt.expandtab = true
 
 -- Recommended by avante.nvim
-vim.opt.laststatus = 3
-vim.opt.swapfile = false
+opt.laststatus = 3
+opt.swapfile = false
+
+-- Diagnostic formatting
+vim.diagnostic.config({
+  float = {
+    border = "rounded",
+    source = "always", -- always show the source (LSP name)
+    focusable = true,
+    header = "",
+    prefix = "",
+  },
+})

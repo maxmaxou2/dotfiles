@@ -1,5 +1,5 @@
 return {
-    'williamboman/mason.nvim',
+    "mason-org/mason.nvim",
     config = function()
         -- Reserve a space in the gutter
         -- This will avoid an annoying layout shift in the screen
@@ -12,15 +12,6 @@ return {
             callback = function(event)
                 local opts = { buffer = event.buf }
 
-                local function organize_imports()
-                    vim.lsp.buf.format({ async = false })
-                    vim.cmd("w")
-                    local filepath = vim.api.nvim_buf_get_name(0)
-                    if filepath:match("%.py$") then
-                        vim.fn.system('ruff check --select I --fix ' .. filepath)
-                    end
-                    vim.cmd('e')
-                end
                 -- Those are already handled by Telescope
                 -- vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
                 -- vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
@@ -30,11 +21,23 @@ return {
                 vim.keymap.set('n', 'go', vim.lsp.buf.type_definition, opts)
                 vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
                 vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, opts)
-                vim.keymap.set({ 'n', 'x' }, '<F3>', organize_imports, opts)
                 vim.keymap.set('n', '<F4>', vim.lsp.buf.code_action, opts)
+
+                -- Optional: manual format key
+                vim.keymap.set({ "n", "x" }, "<F3>", function()
+                    require("conform").format({ async = true }, function(err)
+                        if not err then
+                            local mode = vim.api.nvim_get_mode().mode
+                            if vim.startswith(string.lower(mode), "v") then
+                                vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n",
+                                    true)
+                            end
+                        end
+                        vim.cmd("write")
+                    end)
+                end, { desc = "Format with Ruff (LSP)" })
             end,
         })
-
         require('mason').setup({})
     end
 }

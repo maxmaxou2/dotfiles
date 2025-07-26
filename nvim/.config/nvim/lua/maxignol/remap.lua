@@ -7,6 +7,9 @@ end
 vim.g.mapleader = " "
 map("n", "<leader>e", ":Ex<CR>")
 
+-- Diagnostic floating window
+map('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<CR>')
+
 -- Additional commands for resizing windows
 map('n', '<C-Up>', ':resize +2<CR>')             -- Increase height
 map('n', '<C-Down>', ':resize -2<CR>')           -- Decrease height

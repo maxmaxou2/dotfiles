@@ -28,6 +28,7 @@ return {
         vim.keymap.set('n', 'gr', '<cmd>Telescope lsp_references<CR>', { noremap = true, silent = true })
         vim.keymap.set('n', 'gd', builtin.lsp_definitions, { noremap = true, silent = true })
         vim.keymap.set('n', '<leader>w', builtin.current_buffer_fuzzy_find, { noremap = true, silent = true })
+        vim.keymap.set("n", "<leader>sd", "<cmd>Telescope diagnostics<CR>", { desc = "Show Diagnostics (Telescope)" })
     end,
     defaults = {
         mappings = {

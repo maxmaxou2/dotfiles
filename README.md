@@ -52,10 +52,11 @@ My Neovim setup is designed for a modern development experience with a focus on 
 
 ### LSP and Completion
 
-- **LSP Zero** - Easy LSP configuration
 - **Mason** - Package manager for LSP servers
+- **mason-lspconfig** - Auto enabling of mason lsp servers
 - **blink-cmp** - Completion engine with blink effect
 - **nvim-lspconfig** - Native LSP configuration
+- **conform** - Formatter plugin, lightweight yet powerful
 
 ### Navigation and Editing
 
