@@ -12,6 +12,7 @@ return {
 		-- add any opts here
 		-- for example
 		provider = "claude",
+        auto_suggestions_provider = "copilot",
 		providers = {
 			claude = {
 				endpoint = "https://api.anthropic.com",

@@ -35,7 +35,7 @@ return {
                         end
                         vim.cmd("write")
                     end)
-                end, { desc = "Format with Ruff (LSP)" })
+                end, { desc = "Format with conform" })
             end,
         })
         require('mason').setup({})
