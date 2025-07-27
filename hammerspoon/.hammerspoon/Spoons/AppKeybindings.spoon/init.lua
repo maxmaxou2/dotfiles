@@ -17,7 +17,7 @@ function obj:init()
         ["-"] = "Spotify",
         ["="] = "Notion",
         ["9"] = "Brave Browser",
-        ["\\"] = "Karabiner-Elements",
+        ["\\"] = "Discord",
     }
 
     for key, app in pairs(appHotkeys) do

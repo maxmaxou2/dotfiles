@@ -12,7 +12,6 @@ return {
 		-- add any opts here
 		-- for example
 		provider = "claude",
-        auto_suggestions_provider = "copilot",
 		providers = {
 			claude = {
 				endpoint = "https://api.anthropic.com",
@@ -23,15 +22,22 @@ return {
 					max_tokens = 20480,
 				},
 			},
-			moonshot = {
-				endpoint = "https://api.moonshot.ai/v1",
-				model = "kimi-k2-0711-preview",
-				timeout = 30000, -- Timeout in milliseconds
-				extra_request_body = {
-					temperature = 0.75,
-					max_tokens = 32768,
-				},
+			ollama = {
+				endpoint = "http://localhost:11434",
+				model = "deepseek-coder:6.7b",
 			},
+		},
+		rag_service = { -- RAG Service configuration
+			enabled = false, -- Enables the RAG service
+			host_mount = os.getenv("HOME") .. "/src", -- Host mount path for the rag service (Docker will mount this path)
+			runner = "docker", -- Runner for the RAG service (can use docker or nix)
+			llm = {
+				provider = "claude",
+			},
+			embed = { -- Embedding model configuration for RAG service
+				provider = "ollama", -- Embedding provider
+			},
+			docker_extra_args = "", -- Extra arguments to pass to the docker command
 		},
 	},
 	dependencies = {
