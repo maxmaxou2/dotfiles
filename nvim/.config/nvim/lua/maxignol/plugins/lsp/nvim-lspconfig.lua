@@ -96,8 +96,16 @@ return {
 				settings = {
 					pylsp = {
 						plugins = {
+							pycodestyle = { enabled = false },
+							mccabe = { enabled = false },
+							pyflakes = { enabled = false },
+							yapf = { enabled = false },
+							autopep8 = { enabled = false },
+							ruff = { enabled = true, format = { "I" } },
 							rope_autoimport = {
 								enabled = true,
+								code_actions = { enabled = true },
+								completions = { enabled = false },
 							},
 						},
 					},

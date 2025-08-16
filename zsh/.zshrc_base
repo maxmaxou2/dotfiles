@@ -247,3 +247,6 @@ if [ -n "$TMUX" ]; then
   eval "$(tmux show-environment -s SSH_AUTH_SOCK 2>/dev/null)"
   eval "$(tmux show-environment -s SSH_AGENT_PID 2>/dev/null)"
 fi
+
+# Add nvim-test alias
+alias nvim-test='NVIM_APPNAME=nvim-test nvim'
