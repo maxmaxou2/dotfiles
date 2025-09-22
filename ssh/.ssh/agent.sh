@@ -10,12 +10,14 @@ function start_agent {
 # Check if SSH agent is running
 if [ -f "${SSH_ENV}" ]; then
     source "${SSH_ENV}" > /dev/null
-    # Test if the agent is alive
-    ps -ef | grep "${SSH_AGENT_PID}" | grep -v grep > /dev/null || {
-        start_agent;
-    }
+    # Verify both that the process exists and the socket is usable
+    if ! kill -0 "$SSH_AGENT_PID" 2>/dev/null || ! ssh-add -l &>/dev/null; then
+        rm -f "${SSH_ENV}"
+        start_agent
+    fi
 else
-    start_agent;
+    start_agent
 fi
 
+# Ensure keys are added
 ssh-add -l &>/dev/null || ssh-add &>/dev/null
