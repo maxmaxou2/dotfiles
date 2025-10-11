@@ -9,6 +9,9 @@ return {
             json = { "prettier" },
             lua = { "stylua" },
             markdown = { "prettier" },
+            rust = { "rustfmt" },
+            cpp = { "clang-format" },
+            c = { "clang-format" },
         },
     }
 }

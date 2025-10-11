@@ -15,7 +15,7 @@ brew bundle --global
 
 ### Symlinks
 ```
-stow conda hammerspoon karabiner nvim pdb rich ssh tmux zsh
+stow conda hammerspoon karabiner nvim pdb rich ssh tmux zsh clang-format
 ```
 
 ### Additional steps

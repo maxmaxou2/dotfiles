@@ -27,8 +27,6 @@ return {
 		servers = {
 			vue_ls = {},
 			vtsls = {
-				-- filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
-
 				-- https://github.com/yioneko/vtsls/issues/148
 				filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
 				on_attach = function(client, _)

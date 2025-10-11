@@ -36,6 +36,12 @@ return {
 				-- "xmlformatter",
 				-- "prettier",
 				-- "prettierd",
+                -- C++
+                "clangd",
+                "clang-format",
+                -- Rust
+                "rust-analyzer",
+                "rustfmt",
 			},
 		})
 	end,
