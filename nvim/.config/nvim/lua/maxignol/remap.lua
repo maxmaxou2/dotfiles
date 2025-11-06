@@ -80,3 +80,8 @@ vim.keymap.set('n', '<leader>yd', function()
     vim.fn.setreg('+', vim.fn.fnamemodify(vim.fn.expand('%:p:h'), ':p'))
     print('Dossier parent copié !')
 end, { desc = 'Copier dossier parent' })
+
+-- Toggle cursor lock (keep cursor at same screen row)
+vim.keymap.set("n", "<Space><Space>", function()
+  require("maxignol.cursor_lock").toggle()
+end, { desc = "Toggle cursor lock (keep cursor at same screen row)" })
