@@ -3,169 +3,161 @@ obj.__index = obj
 
 -- Metadata
 obj.name = "AppKeybindings"
-obj.version = "1.1"
+obj.version = "1.2"
 obj.author = "Maxence"
 obj.homepage = ""
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 -- Bundle IDs
-local VSCODE_BUNDLE  = "com.microsoft.VSCode"       -- use "com.microsoft.VSCodeInsiders" if needed
+local VSCODE_BUNDLE = "com.microsoft.VSCode"
 local GHOSTTY_BUNDLE = "com.mitchellh.ghostty"
-local MAIL_BUNDLE  = "com.apple.mail"       -- use "com.microsoft.VSCodeInsiders" if needed
+local MAIL_BUNDLE = "com.apple.mail"
 local CALENDAR_BUNDLE = "com.apple.iCal"
 
--- Key used to persist last-focused choice between the pair
-local LAST_FOCUS_KEY = "AppKeybindings.lastFocusedVSCodeOrGhostty"
+-- Pair definitions
+local PAIRS = {
+	vscode_ghostty = {
+		a = { name = "VS Code", bundle = VSCODE_BUNDLE },
+		b = { name = "Ghostty", bundle = GHOSTTY_BUNDLE },
+		settingsKey = "AppKeybindings.lastFocused.vscode_ghostty",
+		hotkey = "0",
+	},
+	mail_calendar = {
+		a = { name = "Mail", bundle = MAIL_BUNDLE },
+		b = { name = "Calendar", bundle = CALENDAR_BUNDLE },
+		settingsKey = "AppKeybindings.lastFocused.mail_calendar",
+		hotkey = "7",
+	},
+}
+
+-- Helpers
+local function getLastFocused(settingsKey, defaultBundle)
+	return hs.settings.get(settingsKey) or defaultBundle
+end
+
+local function setLastFocused(settingsKey, bundle)
+	hs.settings.set(settingsKey, bundle)
+end
+
+local function isFrontmostBundle(bundle)
+	local frontApp = hs.application.frontmostApplication()
+	return frontApp and frontApp:bundleID() == bundle
+end
+
+local function appIsRunning(bundle)
+	return hs.application.get(bundle) ~= nil
+end
+
+local function focusBundle(bundle)
+	hs.application.launchOrFocusByBundleID(bundle)
+end
+
+local function togglePair(pair)
+	local A = pair.a.bundle
+	local B = pair.b.bundle
+	local key = pair.settingsKey
+
+	if isFrontmostBundle(A) then
+		focusBundle(B)
+		setLastFocused(key, B)
+		return
+	elseif isFrontmostBundle(B) then
+		focusBundle(A)
+		setLastFocused(key, A)
+		return
+	end
+
+	local aRunning = appIsRunning(A)
+	local bRunning = appIsRunning(B)
+
+	if aRunning and bRunning then
+		local target = getLastFocused(key, A)
+		focusBundle(target)
+		setLastFocused(key, target)
+	elseif aRunning then
+		focusBundle(A)
+		setLastFocused(key, A)
+	elseif bRunning then
+		focusBundle(B)
+		setLastFocused(key, B)
+	else
+		local target = getLastFocused(key, A)
+		focusBundle(target)
+		setLastFocused(key, target)
+	end
+end
+
+-- Build a lookup: bundleID -> settingsKey for watcher updates
+local function buildBundleToKeyMap()
+	local map = {}
+	for _, pair in pairs(PAIRS) do
+		map[pair.a.bundle] = pair.settingsKey
+		map[pair.b.bundle] = pair.settingsKey
+	end
+	return map
+end
 
 function obj:init()
-  ---------------------------------------------------------------------------
-  -- Track which of the pair was most recently focused (and persist it)
-  ---------------------------------------------------------------------------
-  local function setLastFocused(bundle)
-    self.lastFocusedPair = bundle
-    hs.settings.set(LAST_FOCUS_KEY, bundle)
-  end
+	-- App watcher to update the proper pair's last-focused on activation
+	local bundleToKey = buildBundleToKeyMap()
 
-  -- Load persisted value (fallback to Ghostty if none yet)
-  self.lastFocusedPair = hs.settings.get(LAST_FOCUS_KEY) or GHOSTTY_BUNDLE
+	self.appWatcher = hs.application.watcher.new(function(appName, event, app)
+		if event == hs.application.watcher.activated and app then
+			local bid = app:bundleID()
+			local key = bundleToKey[bid]
+			if key then
+				setLastFocused(key, bid)
+			end
+		end
+	end)
+	self.appWatcher:start()
 
-  -- Watch app activations to keep last-focused in sync
-  self.appWatcher = hs.application.watcher.new(function(appName, event, app)
-    if event == hs.application.watcher.activated and app then
-      local bid = app:bundleID()
-      if bid == VSCODE_BUNDLE or bid == GHOSTTY_BUNDLE then
-        setLastFocused(bid)
-      end
-    end
-  end)
-  self.appWatcher:start()
+	-- Hotkeys ---------------------------------------------------------------
+	-- Single-app quick launchers (your existing ones)
+	local singleHotkeys = {
+		["8"] = { name = "Slack" },
+		["]"] = { name = "Whatsapp" },
+		["-"] = { name = "Spotify" },
+		["="] = { name = "Notion" },
+		["9"] = { name = "Brave Browser" },
+		["\\"] = { name = "Discord" },
+		["'"] = { -- Toggle between Dofus and Ankama Launcher
+			action = function()
+				local ankamaBundle = "com.ankama.zaap"
+				local dofusBundle = "com.Ankama.Dofus"
+				local frontApp = hs.application.frontmostApplication()
+				local frontBid = frontApp and frontApp:bundleID()
 
-  ---------------------------------------------------------------------------
-  -- Hotkeys
-  ---------------------------------------------------------------------------
-  local appHotkeys = {
-    ["8"] = { name = "Slack" },
-    ["]"] = { name = "Whatsapp" },
-    ["-"] = { name = "Spotify" },
-    ["="] = { name = "Notion" },
-    ["9"] = { name = "Brave Browser" },
-    ["\\"] = { name = "Discord" },
+				if frontBid == dofusBundle then
+					hs.application.launchOrFocusByBundleID(ankamaBundle)
+				elseif hs.application.get(dofusBundle) then
+					hs.application.get(dofusBundle):activate()
+				else
+					hs.application.launchOrFocusByBundleID(ankamaBundle)
+				end
+			end,
+		},
+	}
 
-    -- Toggle between Dofus and Ankama Launcher
-    ["'"] = {
-      action = function()
-        local ankamaBundle = "com.ankama.zaap"
-        local dofusBundle = "com.Ankama.Dofus"
+	-- Bind single-app hotkeys
+	for key, spec in pairs(singleHotkeys) do
+		hs.hotkey.bind({ "ctrl", "cmd" }, key, function()
+			if spec.action then
+				spec.action()
+			elseif spec.bundleID then
+				hs.application.launchOrFocusByBundleID(spec.bundleID)
+			else
+				hs.application.launchOrFocus(spec.name)
+			end
+		end)
+	end
 
-        local frontApp = hs.application.frontmostApplication()
-        local dofusApp = hs.application.find(dofusBundle)
-
-        if frontApp and frontApp:bundleID() == dofusBundle then
-          hs.application.launchOrFocusByBundleID(ankamaBundle)
-        elseif dofusApp then
-          dofusApp:activate()
-        else
-          hs.application.launchOrFocusByBundleID(ankamaBundle)
-        end
-      end,
-    },
-
-    -- ctrl+cmd+7 — switch between Calendar and Mail
-    ["7"] = {
-      action = function()
-        local frontApp = hs.application.frontmostApplication()
-        local frontBid = frontApp and frontApp:bundleID() or nil
-
-        local mailApp  = hs.application.find(MAIL_BUNDLE)
-        local calendarApp  = hs.application.find(CALENDAR_BUNDLE)
-
-        -- If one of the pair is focused, toggle to the other
-        if frontBid == MAIL_BUNDLE then
-          hs.application.launchOrFocusByBundleID(CALENDAR_BUNDLE)
-          setLastFocused(CALENDAR_BUNDLE)
-          return
-        elseif frontBid == CALENDAR_BUNDLE then
-          hs.application.launchOrFocusByBundleID(MAIL_BUNDLE)
-          setLastFocused(MAIL_BUNDLE)
-          return
-        end
-
-        -- Neither is focused:
-        -- - If both are running, focus whichever was last focused (persisted)
-        -- - If only one is running, focus that
-        -- - If neither is running, launch the last-focused choice
-        if mailApp and calendarApp then
-          local target = (self.lastFocusedPair == MAIL_BUNDLE) and MAIL_BUNDLE or CALENDAR_BUNDLE
-          hs.application.launchOrFocusByBundleID(target)
-          setLastFocused(target)
-        elseif calendarApp then
-          calendarApp:activate()
-          setLastFocused(CALENDAR_BUNDLE)
-        elseif mailApp then
-          mailApp:activate()
-          setLastFocused(MAIL_BUNDLE)
-        else
-          local target = self.lastFocusedPair or CALENDAR_BUNDLE
-          hs.application.launchOrFocusByBundleID(target)
-          setLastFocused(target)
-        end
-      end,
-    },
-
-    -- ctrl+cmd+0 — switch between VS Code and Ghostty
-    ["0"] = {
-      action = function()
-        local frontApp = hs.application.frontmostApplication()
-        local frontBid = frontApp and frontApp:bundleID() or nil
-
-        local vsApp  = hs.application.find(VSCODE_BUNDLE)
-        local ghApp  = hs.application.find(GHOSTTY_BUNDLE)
-
-        -- If one of the pair is focused, toggle to the other
-        if frontBid == VSCODE_BUNDLE then
-          hs.application.launchOrFocusByBundleID(GHOSTTY_BUNDLE)
-          setLastFocused(GHOSTTY_BUNDLE)
-          return
-        elseif frontBid == GHOSTTY_BUNDLE then
-          hs.application.launchOrFocusByBundleID(VSCODE_BUNDLE)
-          setLastFocused(VSCODE_BUNDLE)
-          return
-        end
-
-        -- Neither is focused:
-        -- - If both are running, focus whichever was last focused (persisted)
-        -- - If only one is running, focus that
-        -- - If neither is running, launch the last-focused choice
-        if vsApp and ghApp then
-          local target = (self.lastFocusedPair == VSCODE_BUNDLE) and VSCODE_BUNDLE or GHOSTTY_BUNDLE
-          hs.application.launchOrFocusByBundleID(target)
-          setLastFocused(target)
-        elseif ghApp then
-          ghApp:activate()
-          setLastFocused(GHOSTTY_BUNDLE)
-        elseif vsApp then
-          vsApp:activate()
-          setLastFocused(VSCODE_BUNDLE)
-        else
-          local target = self.lastFocusedPair or GHOSTTY_BUNDLE
-          hs.application.launchOrFocusByBundleID(target)
-          setLastFocused(target)
-        end
-      end,
-    },
-  }
-
-  for key, app in pairs(appHotkeys) do
-    hs.hotkey.bind({ "ctrl", "cmd" }, key, function()
-      if app.action then
-        app.action()
-      elseif app.bundleID then
-        hs.application.launchOrFocusByBundleID(app.bundleID)
-      else
-        hs.application.launchOrFocus(app.name)
-      end
-    end)
-  end
+	-- Bind pair toggles from the PAIRS table
+	for _, pair in pairs(PAIRS) do
+		hs.hotkey.bind({ "ctrl", "cmd" }, pair.hotkey, function()
+			togglePair(pair)
+		end)
+	end
 end
 
 return obj
