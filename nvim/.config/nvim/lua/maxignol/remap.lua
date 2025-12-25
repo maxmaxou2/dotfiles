@@ -5,7 +5,7 @@ local function map(mode, lhs, rhs, options)
 end
 
 vim.g.mapleader = " "
-map("n", "<leader>e", ":Ex<CR>")
+map ('n', '<leader>e', '<cmd>Oil<CR>') -- Toggle file explorer
 
 -- Diagnostic floating window
 map('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<CR>')

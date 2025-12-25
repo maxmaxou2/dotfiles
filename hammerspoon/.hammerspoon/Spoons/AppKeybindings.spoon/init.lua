@@ -115,25 +115,53 @@ function obj:init()
 	-- Hotkeys ---------------------------------------------------------------
 	-- Single-app quick launchers (your existing ones)
 	local singleHotkeys = {
-		["8"] = { name = "Slack" },
+		["8"] = { name = "TickTick" },
+		["6"] = { name = "Slack" },
 		["]"] = { name = "Whatsapp" },
 		["-"] = { name = "Spotify" },
 		["="] = { name = "Notion" },
 		["9"] = { name = "Brave Browser" },
 		["\\"] = { name = "Discord" },
-		["'"] = { -- Toggle between Dofus and Ankama Launcher
+		-- ["'"] = { -- Toggle between Dofus and Ankama Launcher
+		-- 	action = function()
+		-- 		local ankamaBundle = "com.ankama.zaap"
+		-- 		local dofusBundle = "com.Ankama.Dofus"
+		-- 		local frontApp = hs.application.frontmostApplication()
+		-- 		local frontBid = frontApp and frontApp:bundleID()
+		--
+		-- 		if frontBid == dofusBundle then
+		-- 			hs.application.launchOrFocusByBundleID(ankamaBundle)
+		-- 		elseif hs.application.get(dofusBundle) then
+		-- 			hs.application.get(dofusBundle):activate()
+		-- 		else
+		-- 			hs.application.launchOrFocusByBundleID(ankamaBundle)
+		-- 		end
+		-- 	end,
+		-- },
+		["'"] = {
 			action = function()
-				local ankamaBundle = "com.ankama.zaap"
-				local dofusBundle = "com.Ankama.Dofus"
-				local frontApp = hs.application.frontmostApplication()
-				local frontBid = frontApp and frontApp:bundleID()
+				local app = hs.application.get("java")
 
-				if frontBid == dofusBundle then
-					hs.application.launchOrFocusByBundleID(ankamaBundle)
-				elseif hs.application.get(dofusBundle) then
-					hs.application.get(dofusBundle):activate()
+				if app then
+					-- Method 1: Try to find the specific window and focus it
+					-- Java apps often have invisible helper windows, so we look for one with "Minecraft" in the title
+					local found = false
+					for _, win in pairs(app:allWindows()) do
+						-- Check for "Minecraft" in title OR if it's a standard window
+						if string.find(win:title(), "Minecraft") or win:isStandard() then
+							win:raise() -- Bring layer to front
+							win:focus() -- Force switch to its Space
+							found = true
+							break
+						end
+					end
+
+					-- Fallback: If we couldn't find a specific window, force activate the app
+					if not found then
+						app:activate(true) -- 'true' attempts to force the OS to switch
+					end
 				else
-					hs.application.launchOrFocusByBundleID(ankamaBundle)
+					hs.application.launchOrFocusByBundleID("org.prismlauncher.PrismLauncher")
 				end
 			end,
 		},

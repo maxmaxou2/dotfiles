@@ -6,4 +6,3 @@ source "$HOME/.zshrc_base"
 
 # Load ssh agent
 [ -f ~/.ssh/agent.sh ] && source ~/.ssh/agent.sh
-

@@ -6,6 +6,8 @@ brew "bat"
 brew "stow"
 # Cross-platform make
 brew "cmake"
+# Imagemagick for image manipulation
+brew "imagemagick"
 # More intuitive version of du in rust
 brew "dust"
 # Command-line fuzzy finder written in Go
