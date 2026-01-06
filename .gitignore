@@ -1,0 +1,18 @@
+# --- Neovim Runtime & State ---
+*.swp
+*.swo
+undo/
+*.un~
+shada/
+
+# --- Language Servers & Tools ---
+lua/mason/
+bin/
+
+# --- Log Files ---
+*.log
+
+# --- OS Specific ---
+.DS_Store
+
+**/automatic_backups/*.json
