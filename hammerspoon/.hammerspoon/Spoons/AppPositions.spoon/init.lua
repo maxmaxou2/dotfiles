@@ -88,6 +88,19 @@ function obj:init()
         hs.alert.show("Écran sauvegardé pour " .. appName)
     end)
 
+    -- Make app fullscreen
+    hs.hotkey.bind({"ctrl", "cmd"}, "F", function()
+        local win = hs.window.focusedWindow()
+        if not win then return end
+
+        -- Reduce window size first to handle cases where it's "stuck" being too large
+        win:setSize({w = 100, h = 100})
+
+        -- Then set it to fullscreen
+        local screen = win:screen():frame()
+        win:setFrame(screen)
+    end)
+
     -- B. Sauvegarde Automatique quand l'utilisateur touche une fenêtre
     -- Cela permet de mémoriser où tu mets tes fenêtres sans faire Cmd+Ctrl+M
     self.windowFilter = hs.window.filter.new():setDefaultFilter()
@@ -106,7 +119,9 @@ function obj:init()
     -- D. Gestion de la Veille (Sleep / Wake)
     self.caffeinateWatcher = hs.caffeinate.watcher.new(function(eventType)
         if (eventType == hs.caffeinate.watcher.systemDidWake) then
-            -- Attendre que le mac se réveille complètement et reconnecte les écrans
+            -- Attendre que le mac se réveille complètement et reconnecte les écrans.
+            -- On lance deux fois, car parfois la fenêtre principale n'est pas restaurée du premier coup.
+            hs.timer.doAfter(2, restorePositions)
             hs.timer.doAfter(4, restorePositions)
         end
     end):start()
