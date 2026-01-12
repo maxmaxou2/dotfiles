@@ -116,6 +116,7 @@ function obj:init()
 	-- Single-app quick launchers (your existing ones)
 	local singleHotkeys = {
 		["8"] = { name = "TickTick" },
+		["delete"] = { name = "Obsidian" },
 		["6"] = { name = "Slack" },
 		["]"] = { name = "Whatsapp" },
 		["-"] = { name = "Spotify" },
