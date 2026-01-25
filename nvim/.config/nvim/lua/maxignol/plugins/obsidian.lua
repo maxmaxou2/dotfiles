@@ -21,11 +21,11 @@ return {
 		workspaces = {
 			{
 				name = "perso",
-				path = "/Users/maxence/Library/Mobile Documents/com~apple~CloudDocs/vaults/Perso",
+				path = "/Users/maxence/Library/Mobile Documents/iCloud~md~obsidian/Documents/Perso",
 			},
 			{
 				name = "Work",
-				path = "/Users/maxence/Library/Mobile Documents/com~apple~CloudDocs/vaults/Work",
+				path = "/Users/maxence/Library/Mobile Documents/iCloud~md~obsidian/Documents/Work",
 			},
 		},
 
