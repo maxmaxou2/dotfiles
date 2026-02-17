@@ -112,11 +112,45 @@ function obj:init()
 	end)
 	self.appWatcher:start()
 
+    local function cycleObsidian()
+		local bundleID = "md.obsidian"
+		local app = hs.application.get(bundleID)
+
+		if not app then
+			hs.application.launchOrFocusByBundleID(bundleID)
+			return
+		end
+
+		if not app:isFrontmost() then
+			app:activate()
+			return
+		end
+
+		-- Cycle windows if app is already active
+		local windows = app:allWindows()
+		local standardWindows = {}
+
+		-- Filter for actual vault windows (ignore settings/popups)
+		for _, win in ipairs(windows) do
+			if win:isStandard() and win:isVisible() then
+				table.insert(standardWindows, win)
+			end
+		end
+
+		if #standardWindows > 1 then
+			-- Focusing the last window in Z-order brings it to the front,
+			-- effectively rotating the stack.
+			standardWindows[#standardWindows]:focus()
+		end
+	end
+
 	-- Hotkeys ---------------------------------------------------------------
 	-- Single-app quick launchers (your existing ones)
 	local singleHotkeys = {
 		["8"] = { name = "TickTick" },
-		["delete"] = { name = "Obsidian" },
+        ["e"] = { name = "Finder" },
+        ["a"] = { name = "Preview" },
+		["delete"] = { action = cycleObsidian },
 		["6"] = { name = "Slack" },
 		["]"] = { name = "Whatsapp" },
 		["-"] = { name = "Spotify" },
