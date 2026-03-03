@@ -6,3 +6,10 @@ source "$HOME/.zshrc_base"
 
 # Load ssh agent
 [ -f ~/.ssh/agent.sh ] && source ~/.ssh/agent.sh
+
+# bun completions
+[ -s "/Users/maxence/.bun/_bun" ] && source "/Users/maxence/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

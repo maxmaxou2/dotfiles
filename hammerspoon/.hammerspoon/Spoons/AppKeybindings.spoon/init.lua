@@ -157,6 +157,7 @@ function obj:init()
 		["="] = { name = "Notion" },
 		["9"] = { name = "Brave Browser" },
 		["\\"] = { name = "Discord" },
+		["r"] = { name = "Strawberry" },
 		-- ["'"] = { -- Toggle between Dofus and Ankama Launcher
 		-- 	action = function()
 		-- 		local ankamaBundle = "com.ankama.zaap"

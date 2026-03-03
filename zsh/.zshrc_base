@@ -250,3 +250,10 @@ fi
 
 # Add nvim-test alias
 alias nvim-test='NVIM_APPNAME=nvim-test nvim'
+
+# bun completions
+[ -s "/Users/maxence/.bun/_bun" ] && source "/Users/maxence/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
