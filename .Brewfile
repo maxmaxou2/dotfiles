@@ -50,6 +50,8 @@ brew "tmuxp"
 brew "watchman"
 # Internet file retriever
 brew "wget"
+# Open source for AI agents
+brew "opencode"
 # App to build and share containerised applications and microservices
 cask "docker"
 # Terminal emulator that uses platform-native UI and GPU acceleration
