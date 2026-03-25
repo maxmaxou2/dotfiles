@@ -1,7 +1,7 @@
 ---
 description: Scans a repository and reports stack, conventions, and commands.
 mode: subagent
-model: google/gemini-3.1-pro-preview
+model: anthropic/claude-sonnet-4-6 
 temperature: 0.1
 tools:
   write: true

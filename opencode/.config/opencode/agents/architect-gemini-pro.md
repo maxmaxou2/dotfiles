@@ -1,7 +1,7 @@
 ---
 description: Architects whole implementations.
 mode: primary
-model: anthropic/claude-opus-4-6
+model: google/gemini-3.1-pro-preview
 temperature: 0.1
 tools:
   write: true

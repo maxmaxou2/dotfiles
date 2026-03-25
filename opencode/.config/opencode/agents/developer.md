@@ -1,7 +1,7 @@
 ---
 description: Writes careful and considered code.
 mode: subagent
-model: google/gemini-3.1-pro-preview
+model: google/gemini-3-flash-preview
 temperature: 0.1
 tools:
   write: true
