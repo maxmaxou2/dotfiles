@@ -1,4 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-gemini-auth@latest", "opencode-claude-auth"]
+  "plugin": ["opencode-gemini-auth@latest", "opencode-claude-auth"],
+  "permission": "allow",
 }

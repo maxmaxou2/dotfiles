@@ -12,36 +12,15 @@ return {
 			-- - https://github.com/neovim/nvim-lspconfig/commit/85379d02d3bac8dc68129a4b81d7dbd00c8b0f77
 			automatic_enable = { exclude = { "vue_ls" } },
 			ensure_installed = {
-				-- Python --
-				-- "mypy",
 				"pylsp",
 				"ruff",
-				-- Lua --
 				"lua_ls",
-				-- "stylua",
-				-- Front --
 				"tailwindcss",
 				"vtsls",
 				"vue_ls",
-				-- JSON --
-				-- "jq",
 				"jsonls",
-				-- XML --
 				"lemminx",
-				-- SQL --
-				-- "pgformatter",
-				-- "postgrestools",
-				-- General --
-				-- "eslint_d",
-				-- "xmlformatter",
-				-- "prettier",
-				-- "prettierd",
-                -- C++
                 "clangd",
-                "clang-format",
-                -- Rust
-                "rust-analyzer",
-                "rustfmt",
 			},
 		})
 	end,

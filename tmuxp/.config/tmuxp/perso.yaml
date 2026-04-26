@@ -1,0 +1,37 @@
+session_name: perso
+start_directory: ~/
+windows:
+  - window_name: dotfiles
+    start_directory: dotfiles
+    focus: true
+    layout: 7066,158x47,0,0[158x36,0,0,1,158x10,0,37,2]
+    panes:
+      - shell_command:
+          - nvim .
+        focus: true
+      - shell_command:
+          - clear
+
+  - window_name: tmp
+    start_directory: src/tmp
+    focus: true
+    layout: 7066,158x47,0,0[158x36,0,0,1,158x10,0,37,2]
+    panes:
+      - shell_command:
+          - conda activate tmp
+          - nvim .
+        focus: true
+      - shell_command:
+          - conda activate tmp
+          - clear
+
+  - window_name: jayn
+    start_directory: src/elite-connect
+    focus: true
+    layout: 7066,158x47,0,0[158x36,0,0,1,158x10,0,37,2]
+    panes:
+      - shell_command:
+          - nvim .
+        focus: true
+      - shell_command:
+          - clear

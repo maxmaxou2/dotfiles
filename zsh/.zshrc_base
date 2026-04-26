@@ -257,3 +257,5 @@ alias nvim-test='NVIM_APPNAME=nvim-test nvim'
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+export OPENCODE_DISABLE_AUTOUPDATE=1
