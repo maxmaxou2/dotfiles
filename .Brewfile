@@ -50,12 +50,16 @@ brew "tmuxp"
 brew "watchman"
 # Internet file retriever
 brew "wget"
+# Internet file retriever
+brew "terminal-notifier"
 # Open source for AI agents
 brew "opencode"
 # App to build and share containerised applications and microservices
 cask "docker"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
+# Tailscale client for secure remote access
+cask "tailscale"
 # Desktop automation application
 cask "hammerspoon"
 vscode "charliermarsh.ruff"

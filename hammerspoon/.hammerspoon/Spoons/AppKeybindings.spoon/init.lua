@@ -101,9 +101,16 @@ function obj:init()
 	-- App watcher to update the proper pair's last-focused on activation
 	local bundleToKey = buildBundleToKeyMap()
 
-	self.appWatcher = hs.application.watcher.new(function(appName, event, app)
+    self.appWatcher = hs.application.watcher.new(function(appName, event, app)
 		if event == hs.application.watcher.activated and app then
 			local bid = app:bundleID()
+			-- 1. Clear terminal-notifier alerts when Ghostty gets focus
+			if bid == GHOSTTY_BUNDLE then
+				-- hs.execute uses a basic shell, so we inject Homebrew paths
+				hs.execute("export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH && terminal-notifier -remove ALL")
+			end
+
+			-- 2. Handle pair tracking
 			local key = bundleToKey[bid]
 			if key then
 				setLastFocused(key, bid)
