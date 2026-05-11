@@ -6,6 +6,16 @@ A journey begins.
 
 ## Setup/
 
+### One-shot
+
+After Homebrew is installed (see below), from this directory:
+
+```
+make setup
+```
+
+This runs `make brew`, `make stow`, and `make stay-alert`. Targets are idempotent — re-running is safe.
+
 ### HomeBrew related
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -17,6 +27,14 @@ brew bundle --global
 ```
 stow conda hammerspoon karabiner nvim pdb rich ssh tmux zsh clang-format opencode
 ```
+
+### stay-alert (notifications for Claude Code & opencode)
+```
+git clone git@github.com:maxmaxou2/stay-alert.git ~/src/stay-alert
+make -C ~/src/stay-alert setup
+```
+
+`make setup` in stay-alert does `bun link` (puts `stay-alert` on PATH) and `stay-alert init` (installs Claude Code hooks, opencode plugin, and compiles the Swift focus helper).
 
 ### Additional steps
 
