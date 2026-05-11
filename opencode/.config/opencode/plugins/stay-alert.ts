@@ -77,20 +77,6 @@ export const StayAlertPlugin: Plugin = async ({ client }) => {
 					return;
 				}
 
-				if (isQuestionAskedEvent(event)) {
-					if (
-						await isSubagentSession(client, event.properties.sessionID, warn)
-					) {
-						return;
-					}
-
-					await notifyUser(await ctx(), {
-						title: "opencode",
-						message: "Question",
-					});
-					return;
-				}
-
 				if (isToastEvent(event)) {
 					await notifyUser(await ctx(), {
 						title: event.properties.title ?? "opencode",
@@ -153,19 +139,6 @@ function isPermissionUpdatedEvent(event: OpencodeEvent): event is {
 		event.type === "permission.updated" &&
 		typeof event.properties === "object" &&
 		event.properties !== null
-	);
-}
-
-function isQuestionAskedEvent(event: OpencodeEvent): event is {
-	type: "question.asked";
-	properties: { sessionID: string };
-} {
-	return (
-		event.type === "question.asked" &&
-		typeof event.properties === "object" &&
-		event.properties !== null &&
-		"sessionID" in event.properties &&
-		typeof event.properties.sessionID === "string"
 	);
 }
 

@@ -1,16 +1,6 @@
 {
   "model": "opus",
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "stay-alert claude-code-hook on-prompt"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
@@ -30,22 +20,13 @@
           }
         ]
       }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "stay-alert claude-code-hook on-permission-request"
-          }
-        ]
-      }
     ]
   },
   "enabledPlugins": {
-    "clangd-lsp@claude-plugins-official": true
+    "clangd-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
   },
   "effortLevel": "medium",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "preferredNotifChannel": "notifications_disabled"
 }
