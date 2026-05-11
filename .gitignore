@@ -16,3 +16,4 @@ bin/
 .DS_Store
 
 **/automatic_backups/*.json
+**/*.bak

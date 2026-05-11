@@ -1,24 +1,43 @@
 {
   "model": "opus",
   "hooks": {
-    "PermissionRequest": [
+    "UserPromptSubmit": [
       {
-        "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": "terminal-notifier -title 'Claude Code' -message 'Tool execution requires permission' -sound default"
+            "command": "stay-alert claude-code-hook on-prompt"
           }
         ]
       }
     ],
     "Stop": [
       {
-        "matcher": ".*",
         "hooks": [
           {
             "type": "command",
-            "command": "terminal-notifier -title 'Claude Code' -message 'Agent finished execution' -sound default"
+            "command": "stay-alert claude-code-hook on-stop"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "stay-alert claude-code-hook on-notification"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "stay-alert claude-code-hook on-permission-request"
           }
         ]
       }
