@@ -1,4 +1,4 @@
-import { createContext, notifyUser } from "stay-alert";
+import { createContext, notifyUser, resolveIcon } from "stay-alert";
 
 type OpencodeClient = {
 	app: {
@@ -13,7 +13,7 @@ type OpencodeClient = {
 	session: {
 		get(input: {
 			path: { id: string };
-		}): Promise<{ data?: { parentID?: string } }>;
+		}): Promise<{ data?: { parentID?: string; title?: string } }>;
 	};
 };
 
@@ -55,32 +55,48 @@ export const StayAlertPlugin: Plugin = async ({ client }) => {
 	return {
 		event: async ({ event }) => {
 			try {
+				const context = await ctx();
+				const iconPath = await resolveIcon(context.config, "opencode");
+
 				if (isSessionIdleEvent(event)) {
-					if (
-						await isSubagentSession(client, event.properties.sessionID, warn)
-					) {
+					const session = await fetchSession(
+						client,
+						event.properties.sessionID,
+						warn,
+					);
+
+					if (session?.parentID != null) {
 						return;
 					}
 
-					await notifyUser(await ctx(), {
-						title: "opencode",
+					await notifyUser(context, {
+						title: sessionTitle(session?.title),
 						message: "Done",
+						iconPath,
 					});
 					return;
 				}
 
 				if (isPermissionUpdatedEvent(event)) {
-					await notifyUser(await ctx(), {
-						title: "opencode",
+					const session = await fetchSession(
+						client,
+						event.properties.sessionID,
+						warn,
+					);
+
+					await notifyUser(context, {
+						title: sessionTitle(session?.title),
 						message: permissionMessage(event),
+						iconPath,
 					});
 					return;
 				}
 
 				if (isToastEvent(event)) {
-					await notifyUser(await ctx(), {
+					await notifyUser(context, {
 						title: event.properties.title ?? "opencode",
 						message: event.properties.message,
+						iconPath,
 					});
 				}
 			} catch (error) {
@@ -90,18 +106,29 @@ export const StayAlertPlugin: Plugin = async ({ client }) => {
 	};
 };
 
-async function isSubagentSession(
+async function fetchSession(
 	client: OpencodeClient,
-	sessionID: string,
+	sessionID: string | undefined,
 	warn: (message: string, error?: unknown) => Promise<void>,
-): Promise<boolean> {
+): Promise<{ parentID?: string; title?: string } | null> {
+	if (sessionID === undefined) {
+		return null;
+	}
+
 	try {
 		const session = await client.session.get({ path: { id: sessionID } });
-		return session.data?.parentID != null;
+		return session.data ?? null;
 	} catch (error) {
 		await warn("failed to inspect opencode session", error);
-		return false;
+		return null;
 	}
+}
+
+function sessionTitle(title?: string): string {
+	if (typeof title === "string" && title.trim() !== "") {
+		return `opencode · ${title.trim()}`;
+	}
+	return "opencode";
 }
 
 function isSessionIdleEvent(
@@ -133,7 +160,7 @@ function isToastEvent(event: OpencodeEvent): event is {
 
 function isPermissionUpdatedEvent(event: OpencodeEvent): event is {
 	type: "permission.updated";
-	properties: { title?: unknown };
+	properties: { sessionID?: string; title?: unknown };
 } {
 	return (
 		event.type === "permission.updated" &&

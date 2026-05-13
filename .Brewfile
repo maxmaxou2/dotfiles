@@ -2,6 +2,8 @@ tap "homebrew/services"
 tap "zitadel/tap"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
+# JavaScript runtime, used by stay-alert
+brew "bun"
 # Symlink farm manager
 brew "stow"
 # Cross-platform make
@@ -50,8 +52,6 @@ brew "tmuxp"
 brew "watchman"
 # Internet file retriever
 brew "wget"
-# Internet file retriever
-brew "terminal-notifier"
 # Open source for AI agents
 brew "opencode"
 # App to build and share containerised applications and microservices
