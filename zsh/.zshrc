@@ -7,12 +7,8 @@ source "$HOME/.zshrc_base"
 # Load ssh agent
 [ -f ~/.ssh/agent.sh ] && source ~/.ssh/agent.sh
 
-# bun completions
-[ -s "/Users/maxence/.bun/_bun" ] && source "/Users/maxence/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+export PATH="$HOME/.bun/bin:$PATH"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # stay-alert begin (managed — do not edit)
 if [[ -n ${ZSH_VERSION-} ]] && command -v stay-alert >/dev/null 2>&1; then
