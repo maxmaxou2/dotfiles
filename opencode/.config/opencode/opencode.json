@@ -1,5 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["opencode-gemini-auth@latest", "opencode-claude-auth"],
-  "permission": "allow"
+  "permission": "allow",
+  "mcp": {
+    "agentmemory": {
+      "type": "local",
+      "command": ["npx", "-y", "@agentmemory/mcp"],
+      "environment": { "AGENTMEMORY_URL": "http://localhost:3111" }
+    }
+  }
 }
