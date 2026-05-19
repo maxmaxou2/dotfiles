@@ -31,6 +31,14 @@
             "statusMessage": "Loading caveman mode..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/maxence/.claude/hooks/context-mode-cache-heal.mjs\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -57,10 +65,15 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"/Users/maxence/.claude/hooks/caveman-statusline.sh\""
+  },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "context-mode@context-mode": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -68,13 +81,15 @@
         "source": "github",
         "repo": "JuliusBrussee/caveman"
       }
+    },
+    "context-mode": {
+      "source": {
+        "source": "github",
+        "repo": "mksglu/context-mode"
+      }
     }
   },
   "effortLevel": "medium",
   "preferredNotifChannel": "notifications_disabled",
-  "agentPushNotifEnabled": true,
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"/Users/maxence/.claude/hooks/caveman-statusline.sh\""
-  }
+  "agentPushNotifEnabled": true
 }

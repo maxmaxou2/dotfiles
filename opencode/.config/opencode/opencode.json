@@ -3,6 +3,7 @@
   "plugin": [
     "opencode-gemini-auth@latest",
     "opencode-claude-auth",
+    "context-mode",
   ],
   "permission": "allow",
   "mcp": {

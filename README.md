@@ -36,6 +36,16 @@ make -C ~/src/stay-alert setup
 
 `make setup` in stay-alert does `bun link` (puts `stay-alert` on PATH) and `stay-alert init` (installs Claude Code hooks, opencode plugin, and compiles the Swift focus helper).
 
+### context-mode (token-saving routing for Claude Code & opencode)
+```
+make context-mode      # npm install -g context-mode
+make verify-symlinks   # sanity-check ~/.claude/* and opencode.json symlinks
+```
+
+- Claude Code: enabled via `enabledPlugins["context-mode@context-mode"]` in `claude/.claude/settings.json` + `SessionStart` hook `context-mode-cache-heal.mjs`.
+- opencode: registered via `plugin: ["context-mode"]` in `opencode/.config/opencode/opencode.json`. Plugin is loaded in-process — no MCP entry needed.
+- Marketplace `mksglu/context-mode` is declared under `extraKnownMarketplaces` in claude settings; install/update of the Claude plugin itself: `/plugin marketplace add mksglu/context-mode && /plugin install context-mode@context-mode`.
+
 ### Additional steps
 
 - Karabiner :
