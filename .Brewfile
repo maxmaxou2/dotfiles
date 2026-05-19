@@ -68,6 +68,8 @@ brew "rclone"
 brew "redis", restart_service: :changed
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
+# CLI proxy to minimize LLM token consumption
+brew "rtk"
 # Software construction tool
 brew "scons"
 # Command-line Interface for Scaleway
