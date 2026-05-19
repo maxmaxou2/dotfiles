@@ -1,6 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-gemini-auth@latest", "opencode-claude-auth"],
+  "plugin": [
+    "opencode-gemini-auth@latest",
+    "opencode-claude-auth",
+  ],
   "permission": "allow",
   "mcp": {
     "agentmemory": {
@@ -8,5 +11,41 @@
       "command": ["npx", "-y", "@agentmemory/mcp"],
       "environment": { "AGENTMEMORY_URL": "http://localhost:3111" }
     }
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".pnpm-store/**",
+      ".bun/**",
+      "**/__pycache__/**",
+      "**/*.py[cod]",
+      "**/.pytest_cache/**",
+      "**/.mypy_cache/**",
+      "**/.ruff_cache/**",
+      ".venv/**",
+      "venv/**",
+      ".next/**",
+      ".nuxt/**",
+      "dist/**",
+      "build/**",
+      "out/**",
+      ".turbo/**",
+      "target/**",
+      "CMakeFiles/**",
+      "**/*.o",
+      "**/*.a",
+      "coverage/**",
+      ".nyc_output/**",
+      "pgdata/**",
+      "redis-data/**",
+      "meilisearch-data/**",
+      "minio-data/**",
+      "logs/**",
+      "**/*.log",
+      ".git/**",
+      "**/*.min.js",
+      "**/*.min.css",
+      "**/*.map"
+    ]
   }
 }
