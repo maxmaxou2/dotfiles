@@ -18,7 +18,8 @@
             "type": "command",
             "command": "stay-alert claude-code-hook on-notification"
           }
-        ]
+        ],
+        "matcher": "permission_prompt"
       }
     ],
     "SessionStart": [
@@ -89,7 +90,7 @@
       }
     }
   },
-  "effortLevel": "medium",
+  "effortLevel": "xhigh",
   "preferredNotifChannel": "notifications_disabled",
   "agentPushNotifEnabled": true
 }

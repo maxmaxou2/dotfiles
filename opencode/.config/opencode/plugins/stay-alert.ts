@@ -77,7 +77,7 @@ export const StayAlertPlugin: Plugin = async ({ client }) => {
 					return;
 				}
 
-				if (isPermissionUpdatedEvent(event)) {
+				if (isQuestionAskedEvent(event)) {
 					const session = await fetchSession(
 						client,
 						event.properties.sessionID,
@@ -86,7 +86,7 @@ export const StayAlertPlugin: Plugin = async ({ client }) => {
 
 					await notifyUser(context, {
 						title: sessionTitle(session?.title),
-						message: permissionMessage(event),
+						message: questionMessage(event),
 						iconPath,
 					});
 					return;
@@ -158,26 +158,26 @@ function isToastEvent(event: OpencodeEvent): event is {
 	);
 }
 
-function isPermissionUpdatedEvent(event: OpencodeEvent): event is {
-	type: "permission.updated";
+function isQuestionAskedEvent(event: OpencodeEvent): event is {
+	type: "question.asked";
 	properties: { sessionID?: string; title?: unknown };
 } {
 	return (
-		event.type === "permission.updated" &&
+		event.type === "question.asked" &&
 		typeof event.properties === "object" &&
 		event.properties !== null
 	);
 }
 
-function permissionMessage(event: { properties: { title?: unknown } }): string {
+function questionMessage(event: { properties: { title?: unknown } }): string {
 	if (
 		typeof event.properties.title === "string" &&
 		event.properties.title.trim() !== ""
 	) {
-		return `Permission required: ${event.properties.title}`;
+		return event.properties.title;
 	}
 
-	return "Permission required";
+	return "Question";
 }
 
 function errorMessage(error: unknown): string {

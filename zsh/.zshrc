@@ -10,6 +10,9 @@ source "$HOME/.zshrc_base"
 export PATH="$HOME/.bun/bin:$PATH"
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
+# postgresql@16 (keg-only — both @14 and @16 installed, neither auto-linked)
+export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+
 # stay-alert begin (managed — do not edit)
 if [[ -n ${ZSH_VERSION-} ]] && command -v stay-alert >/dev/null 2>&1; then
   zmodload zsh/datetime 2>/dev/null
