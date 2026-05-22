@@ -17,3 +17,6 @@ bin/
 
 **/automatic_backups/*.json
 **/*.bak
+
+# --- Architect planning ephemera ---
+opencode/.config/opencode/misc/coding-team/

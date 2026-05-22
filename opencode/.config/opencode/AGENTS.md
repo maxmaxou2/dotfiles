@@ -56,6 +56,24 @@ GitHub API rate-limit: cap at 4 for `gh` calls.
 Write artifacts to FILES — never inline. Return: file path + 1-line description.
 Descriptive source labels for `search(source: "label")`.
 
+# code-review-graph — graph-first navigation
+
+First: call `code-review-graph_list_graph_stats_tool`. If `total_nodes > 0`, graph usable. If graph empty/missing/tool fails, **fallback to usual tools**.
+
+## Prefer graph before file scanning
+
+When graph usable, prefer code-review-graph over Grep/Glob/Read for structure, impact, and symbol lookup. Use file tools only to edit, confirm exact snippets, or when graph lacks coverage.
+
+| Need | Tool |
+|------|------|
+| Availability check | `code-review-graph_list_graph_stats_tool` |
+| Review changed code | `code-review-graph_detect_changes_tool` |
+| Review with snippets | `code-review-graph_get_review_context_tool` |
+| Blast radius | `code-review-graph_get_impact_radius_tool` |
+| Callers/callees/tests/imports | `code-review-graph_query_graph_tool` (`callers_of`, `callees_of`, `tests_for`, `imports_of`, `importers_of`) |
+| Name/keyword search | `code-review-graph_semantic_search_nodes_tool` |
+| Repo structure | `code-review-graph_get_architecture_overview_tool` |
+
 ## Session Continuity
 
 Skills, roles, and decisions persist for the entire session. Do not abandon them as the conversation grows.
