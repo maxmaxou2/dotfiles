@@ -74,6 +74,10 @@ When graph usable, prefer code-review-graph over Grep/Glob/Read for structure, i
 | Name/keyword search | `code-review-graph_semantic_search_nodes_tool` |
 | Repo structure | `code-review-graph_get_architecture_overview_tool` |
 
+# rtk — silent shell rewriting
+
+A plugin silently rewrites common shell commands (`ls`, `cat`, `grep`, `find`, `head`, `tail`, etc.) into token-efficient `rtk` equivalents BEFORE execution. The output you see is from the rewritten command, not the literal one you typed — different formatting, line numbering, truncation behavior. **This is intentional and correct. Trust the output. Do not retry, do not try to defeat the rewrite, do not assume something went wrong.** If you genuinely need the original command's raw byte output, invoke it through `context-mode_ctx_execute(language: "shell", ...)` — that path bypasses the plugin.
+
 ## Session Continuity
 
 Skills, roles, and decisions persist for the entire session. Do not abandon them as the conversation grows.
