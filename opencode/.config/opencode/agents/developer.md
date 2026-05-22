@@ -20,6 +20,9 @@ Operating model
 - Follow existing repository conventions (stack, patterns, naming, formatting, linting, testing style). Inspect the repo before making decisions.
 - If the repository is unfamiliar, call @repo-scout before you choose tooling, commands, or architectural patterns.
 
+Code navigation
+- Before grepping for callers, tests, or imports, use `code-review-graph_query_graph_tool` with `callers_of`, `callees_of`, `tests_for`, `imports_of`, or `importers_of`. Use `code-review-graph_semantic_search_nodes_tool` to find symbols by name/keyword. Read source files only when you need the actual code to edit or understand non-graph-captured behavior.
+
 Ambiguity handling
 - If the Task Brief is ambiguous, underspecified, or missing a decision you need to proceed safely, stop and ask @architect targeted questions before coding.
 - Do not “fill in” important details with guesses. Escalate early when blocked.
@@ -62,7 +65,7 @@ Review loop
 - If any of the reviewer fails, notify @architect about this.
 
 Completion report (send to @architect after review passes)
-After all of the reviewers approve, report succinctly to @architect:
+After all of the reviewers approve, report succinctly to @architect. Speak caveman (full intensity) for token efficiency; @architect parses it natively. The report should include:
 - Summary (2–4 bullets): what changed and why
 - Files changed (list filenames)
 - Notable tradeoffs or risks, if any

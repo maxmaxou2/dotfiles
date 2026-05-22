@@ -20,6 +20,7 @@ Hard constraints
 - If you are uncertain, say so explicitly and list what would disambiguate it.
 
 How to scan (fast and reliable)
+0) When `code-review-graph` is available for this repo, start with `code-review-graph_get_architecture_overview_tool` and `code-review-graph_list_communities_tool`, then use `code-review-graph_semantic_search_nodes_tool` for symbol lookups before falling back to `rg`. If the graph is empty or missing, continue with the existing rg-based flow unchanged.
 1) Identify the repository root and top-level layout.
    - Prefer: `git rev-parse --show-toplevel` (if available), otherwise use the current working directory.
    - List top-level entries: `ls` and `ls -a`.
