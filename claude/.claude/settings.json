@@ -13,13 +13,13 @@
     ],
     "Notification": [
       {
+        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
             "command": "stay-alert claude-code-hook on-notification"
           }
-        ],
-        "matcher": "permission_prompt"
+        ]
       }
     ],
     "SessionStart": [
@@ -90,7 +90,7 @@
       }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "preferredNotifChannel": "notifications_disabled",
   "agentPushNotifEnabled": true
 }
