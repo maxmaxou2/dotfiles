@@ -19,7 +19,7 @@
   </dict>
 
   <key>WorkingDirectory</key>
-  <string>/Users/maxence</string>
+  <string>/Users/maxence/.agentmemory</string>
 
   <key>RunAtLoad</key>
   <true/>
