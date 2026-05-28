@@ -82,12 +82,16 @@ agentmemory ──OpenAI API──▶ LiteLLM (localhost:4000) ──SA auth─�
      OPENAI_API_KEY=<the litellm master_key>
      OPENAI_BASE_URL=http://localhost:4000
      OPENAI_MODEL=gemini-flash
-     EMBEDDING_PROVIDER=local        # embeddings stay local/free; only LLM goes to Vertex
+     EMBEDDING_PROVIDER=openai          # route embeddings through litellm too
+     OPENAI_EMBEDDING_MODEL=vertex-embed
+     OPENAI_EMBEDDING_DIMENSIONS=768
      AGENTMEMORY_AUTO_COMPRESS=true
      MAX_TOKENS=1024
      ```
   4. Restart: `launchctl kickstart -k gui/$(id -u)/ai.agentmemory`.
-- **Why these choices**: `reasoning_effort: disable` in the config (Gemini 2.5 thinking wastes output tokens on compression); `EMBEDDING_PROVIDER=local` avoids a second Vertex dependency; Gemini Flash is the right tier for summarization and is covered by Vertex credits.
+- **Why these choices**: `reasoning_effort: disable` (Gemini 2.5 thinking wastes output tokens on compression); both LLM (`gemini-2.5-flash`) and embeddings (`gemini-embedding-2`, top MTEB, 768-dim) run on Vertex credits.
+- **Embedding-2 quirk**: it's **global-endpoint only** (`vertex_location: global`) — 404s on a regional location like `europe-west4`.
+- **Switching embedding provider/dims after data exists** crashes the worker (`persisted vector index has wrong dimension`). Recovery: add `AGENTMEMORY_DROP_STALE_INDEX=true` to `~/.agentmemory/.env`, restart, then remove the line (rebuilds from live observations).
 - **Verify**: `curl http://localhost:4000/health/liveliness` → 200; live test:
   `KEY=$(grep master_key ~/.config/litellm/config.yaml | sed -E 's/.*: *//'); curl -s localhost:4000/v1/chat/completions -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' -d '{"model":"gemini-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":50}'`
 

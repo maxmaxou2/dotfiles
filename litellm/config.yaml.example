@@ -1,4 +1,4 @@
-# LiteLLM proxy → Vertex AI (Gemini) for agentmemory LLM compression.
+# LiteLLM proxy → Vertex AI (Gemini) for agentmemory LLM + embeddings.
 #
 # Copy to ~/.config/litellm/config.yaml and fill the two secrets:
 #   1. vertex_credentials → path to your Vertex service-account JSON
@@ -11,6 +11,7 @@
 # (.gitignore blocks litellm/config.yaml and *-sa.json).
 
 model_list:
+  # LLM — observation compression (gemini-2.5-flash, regional)
   - model_name: gemini-flash
     litellm_params:
       model: vertex_ai/gemini-2.5-flash
@@ -18,6 +19,15 @@ model_list:
       vertex_location: europe-west4          # region (SA auth supports regional endpoints)
       vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
       reasoning_effort: disable              # no thinking — compression doesn't need it (saves tokens/latency)
+  # Embeddings — gemini-embedding-2 (GA, top MTEB). NOTE: global endpoint only,
+  # 404s on regional like europe-west4. 768-dim (MRL truncation, no quality loss).
+  - model_name: vertex-embed
+    litellm_params:
+      model: vertex_ai/gemini-embedding-2
+      vertex_project: jayn-dev
+      vertex_location: global                # embedding-2 is global-endpoint only
+      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      dimensions: 768
 litellm_settings:
   drop_params: true                          # tolerate OpenAI params Vertex doesn't accept
 general_settings:
