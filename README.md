@@ -59,6 +59,37 @@ Persistent memory that auto-captures sessions/tools and recalls context into fut
 - **Claude Code**: marketplace `rohitg00/agentmemory` is declared under `extraKnownMarketplaces` and enabled via `enabledPlugins["agentmemory@agentmemory"]` in `claude/.claude/settings.json`. The plugin registers 12 hooks, 8 skills, and auto-wires the `@agentmemory/mcp` server via its own `.mcp.json` — **no manual `mcpServers` entry needed**. `make agentmemory` runs `claude plugin marketplace add rohitg00/agentmemory && claude plugin install agentmemory@agentmemory`; if the CLI step fails, run `/plugin install agentmemory` inside Claude Code.
 - **opencode**: wired declaratively in `opencode/.config/opencode/opencode.json` — manual `mcp.agentmemory` entry (opencode does NOT auto-wire MCP) plus `plugin: ["./plugins/agentmemory-capture.ts"]`. The plugin (`plugins/agentmemory-capture.ts`, 22 auto-capture hooks) and `/recall`+`/remember` commands (`commands/`) are stowed by the `opencode` package via `make stow`.
 - Verify: `curl http://localhost:3111/agentmemory/health` and `agentmemory status`.
+- **LLM compression** (optional, richer summaries) is routed through a LiteLLM proxy → Vertex/Gemini — see next section.
+
+### LiteLLM → Vertex AI (Gemini) for agentmemory compression
+```
+make litellm
+```
+
+agentmemory's `AGENTMEMORY_AUTO_COMPRESS` runs an LLM on observations for richer memories. agentmemory has **no native Vertex support** (its Gemini path only hits AI Studio), so a local **LiteLLM** proxy bridges it: agentmemory speaks OpenAI → LiteLLM → Vertex AI (Gemini 2.5 Flash) using a GCP **service account**, billed to the `jayn-dev` project / `europe-west4`.
+
+```
+agentmemory ──OpenAI API──▶ LiteLLM (localhost:4000) ──SA auth──▶ Vertex AI / Gemini 2.5 Flash
+```
+
+- **Install/run**: `make litellm` installs the proxy via `uv` (with `google-cloud-aiplatform` + `google-auth`) and loads `litellm/ai.litellm.plist` into `~/Library/LaunchAgents` (autostart, `KeepAlive`).
+- **Config**: committed template `litellm/config.yaml.example` → copy to `~/.config/litellm/config.yaml`. The real config holds the `master_key` and is **gitignored** (so is `*-sa.json`).
+- **Secrets (manual on a fresh machine, never committed):**
+  1. Place the Vertex service-account JSON at `~/.config/litellm/vertex-sa.json` (`chmod 600`).
+  2. Set `master_key` + `vertex_credentials` path in `~/.config/litellm/config.yaml`.
+  3. Point agentmemory at it in `~/.agentmemory/.env`:
+     ```
+     OPENAI_API_KEY=<the litellm master_key>
+     OPENAI_BASE_URL=http://localhost:4000
+     OPENAI_MODEL=gemini-flash
+     EMBEDDING_PROVIDER=local        # embeddings stay local/free; only LLM goes to Vertex
+     AGENTMEMORY_AUTO_COMPRESS=true
+     MAX_TOKENS=1024
+     ```
+  4. Restart: `launchctl kickstart -k gui/$(id -u)/ai.agentmemory`.
+- **Why these choices**: `reasoning_effort: disable` in the config (Gemini 2.5 thinking wastes output tokens on compression); `EMBEDDING_PROVIDER=local` avoids a second Vertex dependency; Gemini Flash is the right tier for summarization and is covered by Vertex credits.
+- **Verify**: `curl http://localhost:4000/health/liveliness` → 200; live test:
+  `KEY=$(grep master_key ~/.config/litellm/config.yaml | sed -E 's/.*: *//'); curl -s localhost:4000/v1/chat/completions -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' -d '{"model":"gemini-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":50}'`
 
 ### Additional steps
 

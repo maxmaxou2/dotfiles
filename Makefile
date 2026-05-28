@@ -1,4 +1,4 @@
-.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory verify-symlinks
+.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory litellm verify-symlinks
 
 STAY_ALERT_REPO ?= git@github.com:maxmaxou2/stay-alert.git
 STAY_ALERT_DIR  ?= $(HOME)/src/stay-alert
@@ -13,9 +13,10 @@ help:
 	@echo "  stay-alert       Clone (if missing) and install stay-alert (bun link + init)"
 	@echo "  context-mode     Install context-mode globally via npm (opencode plugin + claude hook)"
 	@echo "  agentmemory      Install agentmemory (npm), launchd autostart server, claude plugin"
+	@echo "  litellm          Install litellm proxy (uv), launchd autostart, Vertex/Gemini for agentmemory compression"
 	@echo "  verify-symlinks  Check that critical claude/opencode configs are symlinked into HOME"
 
-setup: xcode-clt brew stow stay-alert context-mode agentmemory verify-symlinks
+setup: xcode-clt brew stow stay-alert context-mode agentmemory litellm verify-symlinks
 
 xcode-clt:
 	@xcode-select -p >/dev/null 2>&1 || xcode-select --install
@@ -54,6 +55,25 @@ agentmemory:
 	@claude plugin marketplace add rohitg00/agentmemory 2>/dev/null || true
 	@claude plugin install agentmemory@agentmemory 2>/dev/null || echo "claude plugin install: run '/plugin install agentmemory' in Claude Code if CLI failed"
 	@echo "Claude Code: hooks+skills+MCP via plugin. opencode: plugin+MCP+commands via 'make stow' (opencode package)."
+
+litellm:
+	@command -v uv >/dev/null 2>&1 || { echo "uv not found — install first (brew install uv)"; exit 1; }
+	uv tool install "litellm[proxy]" --with google-cloud-aiplatform --with google-auth --force
+	@mkdir -p $(HOME)/.config/litellm
+	@if [ ! -f $(HOME)/.config/litellm/config.yaml ]; then \
+		cp $(CURDIR)/litellm/config.yaml.example $(HOME)/.config/litellm/config.yaml; \
+		chmod 600 $(HOME)/.config/litellm/config.yaml; \
+		echo "ACTION REQUIRED: edit ~/.config/litellm/config.yaml — set master_key + vertex_credentials path,"; \
+		echo "                 place the Vertex service-account JSON at ~/.config/litellm/vertex-sa.json (chmod 600),"; \
+		echo "                 then set agentmemory ~/.agentmemory/.env: OPENAI_API_KEY=<that master_key>,"; \
+		echo "                 OPENAI_BASE_URL=http://localhost:4000, OPENAI_MODEL=gemini-flash,"; \
+		echo "                 EMBEDDING_PROVIDER=local, AGENTMEMORY_AUTO_COMPRESS=true, MAX_TOKENS=1024."; \
+	else echo "~/.config/litellm/config.yaml exists — leaving as-is"; fi
+	@mkdir -p $(HOME)/Library/LaunchAgents
+	@cp $(CURDIR)/litellm/ai.litellm.plist $(HOME)/Library/LaunchAgents/ai.litellm.plist
+	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
+	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
+	@sleep 12; curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1 && echo "litellm healthy: http://localhost:4000" || echo "litellm not responding yet (check ~/.config/litellm/litellm.log)"
 
 verify-symlinks:
 	@echo "Verifying critical symlinks..."

@@ -1,0 +1,24 @@
+# LiteLLM proxy → Vertex AI (Gemini) for agentmemory LLM compression.
+#
+# Copy to ~/.config/litellm/config.yaml and fill the two secrets:
+#   1. vertex_credentials → path to your Vertex service-account JSON
+#   2. master_key        → any random string (becomes agentmemory's OPENAI_API_KEY)
+#
+#   cp config.yaml.example ~/.config/litellm/config.yaml
+#   # then edit the two values below, chmod 600 ~/.config/litellm/config.yaml
+#
+# The real config.yaml + the SA JSON are SECRETS — never commit them
+# (.gitignore blocks litellm/config.yaml and *-sa.json).
+
+model_list:
+  - model_name: gemini-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: jayn-dev               # GCP project id
+      vertex_location: europe-west4          # region (SA auth supports regional endpoints)
+      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      reasoning_effort: disable              # no thinking — compression doesn't need it (saves tokens/latency)
+litellm_settings:
+  drop_params: true                          # tolerate OpenAI params Vertex doesn't accept
+general_settings:
+  master_key: sk-litellm-REPLACE_WITH_RANDOM # = agentmemory OPENAI_API_KEY (loopback-only)
