@@ -74,7 +74,8 @@
     "clangd-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
     "caveman@caveman": true,
-    "context-mode@context-mode": true
+    "context-mode@context-mode": true,
+    "agentmemory@agentmemory": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -87,6 +88,12 @@
       "source": {
         "source": "github",
         "repo": "mksglu/context-mode"
+      }
+    },
+    "agentmemory": {
+      "source": {
+        "source": "github",
+        "repo": "rohitg00/agentmemory"
       }
     }
   },

@@ -46,6 +46,20 @@ make verify-symlinks   # sanity-check ~/.claude/* and opencode.json symlinks
 - opencode: registered via `plugin: ["context-mode"]` in `opencode/.config/opencode/opencode.json`. Plugin is loaded in-process — no MCP entry needed.
 - Marketplace `mksglu/context-mode` is declared under `extraKnownMarketplaces` in claude settings; install/update of the Claude plugin itself: `/plugin marketplace add mksglu/context-mode && /plugin install context-mode@context-mode`.
 
+### agentmemory (persistent cross-session memory for Claude Code & opencode)
+```
+make agentmemory       # npm install -g @agentmemory/agentmemory, launchd autostart, claude plugin
+make verify-symlinks
+```
+
+Persistent memory that auto-captures sessions/tools and recalls context into future sessions. A local REST server runs on `http://localhost:3111` (viewer: `http://localhost:3113`).
+
+- **Server**: `make agentmemory` installs the `@agentmemory/agentmemory` npm package and loads `agentmemory/ai.agentmemory.plist` into `~/Library/LaunchAgents` so the server autostarts at login (`KeepAlive`).
+- **Provider keys**: on a fresh machine `agentmemory init` seeds `~/.agentmemory/.env`. Fill in the LLM + embeddings keys there — this file holds secrets and is **not** committed. Verify with `agentmemory status` (Provider/Embeddings should be ✓).
+- **Claude Code**: marketplace `rohitg00/agentmemory` is declared under `extraKnownMarketplaces` and enabled via `enabledPlugins["agentmemory@agentmemory"]` in `claude/.claude/settings.json`. The plugin registers 12 hooks, 8 skills, and auto-wires the `@agentmemory/mcp` server via its own `.mcp.json` — **no manual `mcpServers` entry needed**. `make agentmemory` runs `claude plugin marketplace add rohitg00/agentmemory && claude plugin install agentmemory@agentmemory`; if the CLI step fails, run `/plugin install agentmemory` inside Claude Code.
+- **opencode**: wired declaratively in `opencode/.config/opencode/opencode.json` — manual `mcp.agentmemory` entry (opencode does NOT auto-wire MCP) plus `plugin: ["./plugins/agentmemory-capture.ts"]`. The plugin (`plugins/agentmemory-capture.ts`, 22 auto-capture hooks) and `/recall`+`/remember` commands (`commands/`) are stowed by the `opencode` package via `make stow`.
+- Verify: `curl http://localhost:3111/agentmemory/health` and `agentmemory status`.
+
 ### Additional steps
 
 - Karabiner :

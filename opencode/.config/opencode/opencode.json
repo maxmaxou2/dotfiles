@@ -2,18 +2,35 @@
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     "opencode-gemini-auth@latest",
-    "opencode-claude-auth"
+    "opencode-claude-auth",
+    "@tarquinen/opencode-dcp@latest",
+    "context-mode",
+    "./plugins/agentmemory-capture.ts"
   ],
   "permission": "allow",
+  "compaction": {
+    "auto": false,
+    "prune": true,
+    "reserved": 10000
+  },
   "mcp": {
     "agentmemory": {
       "type": "local",
-      "command": ["npx", "-y", "@agentmemory/mcp"],
-      "environment": { "AGENTMEMORY_URL": "http://localhost:3111" }
+      "command": [
+        "npx",
+        "-y",
+        "@agentmemory/mcp"
+      ],
+      "environment": {
+        "AGENTMEMORY_URL": "http://localhost:3111"
+      }
     },
     "code-review-graph": {
       "type": "local",
-      "command": ["/Users/maxence/.local/bin/code-review-graph", "mcp"]
+      "command": [
+        "/Users/maxence/.local/bin/code-review-graph",
+        "mcp"
+      ]
     }
   },
   "watcher": {
