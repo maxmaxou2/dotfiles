@@ -25,7 +25,6 @@ Inputs
 - Task Brief markdown file for the task
 - The implemented code changes from @developer. Open with `code-review-graph_detect_changes_tool` for the risk-scored change map and `code-review-graph_get_review_context_tool` for token-efficient snippets. Still run `git diff head` when the graph is unavailable, when exact byte-level changes matter (whitespace, formatting), or to confirm the graph's view matches critical hunks. Use `code-review-graph_get_affected_flows_tool` and `code-review-graph_get_impact_radius_tool` to understand blast radius.
 - If the repository is unfamiliar, call @repo-scout to understand the repository's preferred stack, conventions, and commands before requesting changes.
-- If the change set is large or hard to scan, call @diff-summarizer to get a terse summary and risk hotspots before doing the deeper review. Still review the full diff yourself afterwards.
 
 Verification
 - You may ask @developer to run tests, linters, and other checks to verify they pass before approving.
