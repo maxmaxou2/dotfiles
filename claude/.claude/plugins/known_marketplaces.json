@@ -1,0 +1,34 @@
+{
+  "claude-plugins-official": {
+    "source": {
+      "source": "github",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "installLocation": "/Users/hugopuybareau/.claude/plugins/marketplaces/claude-plugins-official",
+    "lastUpdated": "2026-05-30T14:37:01.147Z"
+  },
+  "caveman": {
+    "source": {
+      "source": "github",
+      "repo": "JuliusBrussee/caveman"
+    },
+    "installLocation": "/Users/hugopuybareau/.claude/plugins/marketplaces/caveman",
+    "lastUpdated": "2026-05-30T14:04:17.550Z"
+  },
+  "context-mode": {
+    "source": {
+      "source": "github",
+      "repo": "mksglu/context-mode"
+    },
+    "installLocation": "/Users/hugopuybareau/.claude/plugins/marketplaces/context-mode",
+    "lastUpdated": "2026-05-30T14:04:20.925Z"
+  },
+  "agentmemory": {
+    "source": {
+      "source": "github",
+      "repo": "rohitg00/agentmemory"
+    },
+    "installLocation": "/Users/hugopuybareau/.claude/plugins/marketplaces/agentmemory",
+    "lastUpdated": "2026-05-30T14:04:25.447Z"
+  }
+}

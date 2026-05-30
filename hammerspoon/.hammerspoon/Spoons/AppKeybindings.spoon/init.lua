@@ -14,23 +14,9 @@ local ALERTER = "/opt/homebrew/bin/alerter"
 local VSCODE_BUNDLE = "com.microsoft.VSCode"
 local GHOSTTY_BUNDLE = "com.mitchellh.ghostty"
 local MAIL_BUNDLE = "com.apple.mail"
-local CALENDAR_BUNDLE = "com.apple.iCal"
 
 -- Pair definitions
-local PAIRS = {
-	vscode_ghostty = {
-		a = { name = "VS Code", bundle = VSCODE_BUNDLE },
-		b = { name = "Ghostty", bundle = GHOSTTY_BUNDLE },
-		settingsKey = "AppKeybindings.lastFocused.vscode_ghostty",
-		hotkey = "0",
-	},
-	mail_calendar = {
-		a = { name = "Mail", bundle = MAIL_BUNDLE },
-		b = { name = "Calendar", bundle = CALENDAR_BUNDLE },
-		settingsKey = "AppKeybindings.lastFocused.mail_calendar",
-		hotkey = "7",
-	},
-}
+local PAIRS = {}
 
 -- Helpers
 local function getLastFocused(settingsKey, defaultBundle)
@@ -154,60 +140,17 @@ function obj:init()
 	-- Hotkeys ---------------------------------------------------------------
 	-- Single-app quick launchers (your existing ones)
 	local singleHotkeys = {
-		["8"] = { name = "TickTick" },
-		["e"] = { name = "Finder" },
-		["a"] = { name = "Preview" },
-		["delete"] = { action = cycleObsidian },
-		["6"] = { name = "Slack" },
-		["]"] = { name = "Whatsapp" },
-		["-"] = { name = "Spotify" },
-		["="] = { name = "Notion" },
-		["9"] = { name = "Brave Browser" },
-		["\\"] = { name = "Discord" },
+		["p"] = { name = "Finder" },
+		["o"] = { action = cycleObsidian },
+		["w"] = { name = "Whatsapp" },
+		["s"] = { name = "Spotify" },
+		["d"] = { name = "Discord" },
 		["r"] = { name = "Strawberry" },
-		-- ["'"] = { -- Toggle between Dofus and Ankama Launcher
-		-- 	action = function()
-		-- 		local ankamaBundle = "com.ankama.zaap"
-		-- 		local dofusBundle = "com.Ankama.Dofus"
-		-- 		local frontApp = hs.application.frontmostApplication()
-		-- 		local frontBid = frontApp and frontApp:bundleID()
-		--
-		-- 		if frontBid == dofusBundle then
-		-- 			hs.application.launchOrFocusByBundleID(ankamaBundle)
-		-- 		elseif hs.application.get(dofusBundle) then
-		-- 			hs.application.get(dofusBundle):activate()
-		-- 		else
-		-- 			hs.application.launchOrFocusByBundleID(ankamaBundle)
-		-- 		end
-		-- 	end,
-		-- },
-		["'"] = {
-			action = function()
-				local app = hs.application.get("java")
-
-				if app then
-					-- Method 1: Try to find the specific window and focus it
-					-- Java apps often have invisible helper windows, so we look for one with "Minecraft" in the title
-					local found = false
-					for _, win in pairs(app:allWindows()) do
-						-- Check for "Minecraft" in title OR if it's a standard window
-						if string.find(win:title(), "Minecraft") or win:isStandard() then
-							win:raise() -- Bring layer to front
-							win:focus() -- Force switch to its Space
-							found = true
-							break
-						end
-					end
-
-					-- Fallback: If we couldn't find a specific window, force activate the app
-					if not found then
-						app:activate(true) -- 'true' attempts to force the OS to switch
-					end
-				else
-					hs.application.launchOrFocusByBundleID("org.prismlauncher.PrismLauncher")
-				end
-			end,
-		},
+		["c"] = { name = "Google Chrome" },
+		["t"] = { bundleID = GHOSTTY_BUNDLE },
+		["v"] = { bundleID = VSCODE_BUNDLE },
+		["m"] = { name = "CapCut" },
+		["n"] = { bundleID = MAIL_BUNDLE },
 	}
 
 	-- Bind single-app hotkeys

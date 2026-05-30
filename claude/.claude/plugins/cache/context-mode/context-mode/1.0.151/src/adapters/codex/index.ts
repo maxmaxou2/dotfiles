@@ -1,0 +1,881 @@
+/**
+ * adapters/codex — Codex CLI platform adapter.
+ *
+ * Implements HookAdapter for Codex CLI's JSON stdin/stdout paradigm.
+ *
+ * Codex CLI hook specifics:
+ *   - 6 hook events: PreToolUse, PostToolUse, PreCompact, SessionStart, UserPromptSubmit, Stop
+ *   - Same wire protocol as Claude Code (JSON stdin → stdout)
+ *   - Config: $CODEX_HOME or ~/.codex (hooks.json + config.toml)
+ *   - Session dir: $CODEX_HOME/context-mode/sessions/
+ *
+ * Hook dispatch is stable in Codex CLI. PreToolUse deny decisions work,
+ * while input rewriting remains blocked on upstream updatedInput support.
+ * Track: https://github.com/openai/codex/issues/18491
+ */
+
+import { execFileSync } from "node:child_process";
+import {
+  readFileSync,
+  writeFileSync,
+  accessSync,
+  copyFileSync,
+  constants,
+  mkdirSync,
+} from "node:fs";
+import { resolve, dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { BaseAdapter, resolveContextModeDataRoot } from "../base.js";
+import { hashProjectDirCanonical } from "../../session/db.js";
+import { resolveCodexConfigDir } from "./paths.js";
+
+import {
+  type HookAdapter,
+  type HookParadigm,
+  type PlatformCapabilities,
+  type DiagnosticResult,
+  type PreToolUseEvent,
+  type PostToolUseEvent,
+  type PreCompactEvent,
+  type SessionStartEvent,
+  type PreToolUseResponse,
+  type PostToolUseResponse,
+  type PreCompactResponse,
+  type SessionStartResponse,
+  type HookEntry,
+  type HookRegistration,
+} from "../types.js";
+
+// ─────────────────────────────────────────────────────────
+// Codex CLI raw input types
+// ─────────────────────────────────────────────────────────
+
+interface CodexHookInput {
+  tool_name?: string;
+  tool_input?: Record<string, unknown>;
+  tool_response?: string;
+  session_id?: string;
+  cwd?: string;
+  hook_event_name?: string;
+  model?: string;
+  permission_mode?: string;
+  tool_use_id?: string;
+  transcript_path?: string | null;
+  turn_id?: string;
+  source?: string;
+}
+
+interface CodexHooksFile {
+  hooks?: HookRegistration;
+}
+
+type HooksConfigReadResult =
+  | { ok: true; config: CodexHooksFile }
+  | { ok: false; reason: "missing" }
+  | { ok: false; reason: "invalid_json"; error: string }
+  | { ok: false; reason: "read_error"; error: string };
+
+// PreToolUse matcher: canonical Codex tool names + context-mode bare MCP tool
+// names + external MCP catch-all literal (#529, #547 hotfix).
+//
+// Codex CLI's Rust `regex` crate does NOT support look-around, and
+// `is_exact_matcher` (refs/platforms/codex/codex-rs/hooks/src/events/common.rs:152)
+// short-circuits the regex engine entirely when the matcher contains only
+// [A-Za-z0-9_|]. v1.0.124 shipped a matcher with `(?!.*context-mode)` AND
+// `mcp__.*__ctx_*` regex syntax — Codex rejected the file at boot with
+// "look-around not supported" → all v1.0.124 Codex users broken (#547).
+//
+// Fix: keep only literal tool names (charset-clean). The hook BODY already
+// filters context-mode's own MCP tools via `isExternalMcpTool()` in
+// hooks/core/routing.mjs, so dropping `mcp__.*__ctx_*` and the lookaround
+// preserves end-to-end semantics. The literal `mcp__` final segment is a
+// no-op under exact-matcher mode but kept for parity with hooks/hooks.json.
+//
+// Keep this as a single string literal — `codex.test.ts` drift-guard parses
+// the source with a `"([^"]+)"` regex.
+const PRE_TOOL_USE_MATCHER_PATTERN =
+  "local_shell|shell|shell_command|exec_command|Bash|Shell|apply_patch|Edit|Write|grep_files|ctx_execute|ctx_execute_file|ctx_batch_execute|ctx_fetch_and_index|ctx_search|ctx_index|mcp__";
+
+const CODEX_HOOK_COMMANDS = {
+  PreToolUse: "context-mode hook codex pretooluse",
+  PostToolUse: "context-mode hook codex posttooluse",
+  SessionStart: "context-mode hook codex sessionstart",
+  PreCompact: "context-mode hook codex precompact",
+  UserPromptSubmit: "context-mode hook codex userpromptsubmit",
+  Stop: "context-mode hook codex stop",
+} as const;
+
+const LEGACY_HOOK_PATH_SUFFIXES: Record<keyof typeof CODEX_HOOK_COMMANDS, string[]> = {
+  PreToolUse: ["hooks/pretooluse.mjs", "hooks/codex/pretooluse.mjs"],
+  PostToolUse: ["hooks/posttooluse.mjs", "hooks/codex/posttooluse.mjs"],
+  SessionStart: ["hooks/sessionstart.mjs", "hooks/codex/sessionstart.mjs"],
+  PreCompact: ["hooks/precompact.mjs", "hooks/codex/precompact.mjs"],
+  UserPromptSubmit: ["hooks/userpromptsubmit.mjs", "hooks/codex/userpromptsubmit.mjs"],
+  Stop: ["hooks/stop.mjs", "hooks/codex/stop.mjs"],
+};
+
+type CodexVersionRunner = (
+  file: string,
+  args: string[],
+  options: {
+    encoding: BufferEncoding;
+    stdio: ["ignore", "pipe", "ignore"];
+    timeout: number;
+  },
+) => string | Buffer;
+
+export function probeCodexCliVersion(runCommand: CodexVersionRunner = execFileSync): string | null {
+  try {
+    const output = process.platform === "win32"
+      ? runCommand("cmd.exe", ["/d", "/s", "/c", "codex --version"], {
+        encoding: "utf-8",
+        stdio: ["ignore", "pipe", "ignore"],
+        timeout: 5000,
+      })
+      : runCommand("codex", ["--version"], {
+        encoding: "utf-8",
+        stdio: ["ignore", "pipe", "ignore"],
+        timeout: 1500,
+      });
+    const version = String(output).trim();
+    return version.length > 0 ? version : "available (version output empty)";
+  } catch {
+    return null;
+  }
+}
+
+function getTomlSection(raw: string, sectionName: string): string | null {
+  const lines = raw.split(/\r?\n/);
+  let inSection = false;
+  const body: string[] = [];
+
+  for (const line of lines) {
+    const section = line.match(/^\s*\[([^\]]+)\]\s*(?:#.*)?$/);
+    if (section) {
+      if (inSection) break;
+      inSection = section[1]?.trim() === sectionName;
+      continue;
+    }
+    if (inSection) body.push(line);
+  }
+
+  return inSection ? body.join("\n") : null;
+}
+
+function hasCodexHooksFeature(raw: string): boolean {
+  const features = getTomlSection(raw, "features");
+  return features !== null && /^\s*hooks\s*=\s*true\s*(?:#.*)?$/mi.test(features);
+}
+
+function hasDeprecatedCodexHooksFeature(raw: string): boolean {
+  const features = getTomlSection(raw, "features");
+  return features !== null && /^\s*codex_hooks\s*=\s*true\s*(?:#.*)?$/mi.test(features);
+}
+
+function ensureCodexHooksFeature(raw: string): { text: string; changed: boolean } {
+  if (hasCodexHooksFeature(raw)) return { text: raw, changed: false };
+
+  const newline = raw.includes("\r\n") ? "\r\n" : "\n";
+  const lines = raw.split(/\r?\n/);
+  const featuresIndex = lines.findIndex((line) => /^\s*\[features\]\s*(?:#.*)?$/.test(line));
+
+  if (featuresIndex === -1) {
+    const prefix = raw.length > 0 && !raw.endsWith("\n") ? newline : "";
+    return {
+      text: `${raw}${prefix}[features]${newline}hooks = true${newline}`,
+      changed: true,
+    };
+  }
+
+  let endIndex = lines.length;
+  for (let i = featuresIndex + 1; i < lines.length; i++) {
+    if (/^\s*\[[^\]]+\]\s*(?:#.*)?$/.test(lines[i] ?? "")) {
+      endIndex = i;
+      break;
+    }
+  }
+
+  for (let i = featuresIndex + 1; i < endIndex; i++) {
+    if (/^\s*hooks\s*=/.test(lines[i] ?? "")) {
+      lines[i] = "hooks = true";
+      return { text: lines.join(newline), changed: true };
+    }
+  }
+
+  lines.splice(featuresIndex + 1, 0, "hooks = true");
+  return { text: lines.join(newline), changed: true };
+}
+
+// ─────────────────────────────────────────────────────────
+// Adapter implementation
+// ─────────────────────────────────────────────────────────
+
+export class CodexAdapter extends BaseAdapter implements HookAdapter {
+  constructor() {
+    super([".codex"]);
+  }
+
+  readonly name = "Codex CLI";
+  readonly paradigm: HookParadigm = "json-stdio";
+
+  readonly capabilities: PlatformCapabilities = {
+    preToolUse: true,
+    postToolUse: true,
+    preCompact: true,
+    sessionStart: true,
+    canModifyArgs: false,
+    canModifyOutput: false,
+    canInjectSessionContext: true,
+  };
+
+  // ── Input parsing ──────────────────────────────────────
+
+  parsePreToolUseInput(raw: unknown): PreToolUseEvent {
+    const input = raw as CodexHookInput;
+    return {
+      toolName: input.tool_name ?? "",
+      toolInput: input.tool_input ?? {},
+      sessionId: this.extractSessionId(input),
+      projectDir: this.getProjectDir(input),
+      raw,
+    };
+  }
+
+  parsePostToolUseInput(raw: unknown): PostToolUseEvent {
+    const input = raw as CodexHookInput;
+    return {
+      toolName: input.tool_name ?? "",
+      toolInput: input.tool_input ?? {},
+      toolOutput: input.tool_response,
+      sessionId: this.extractSessionId(input),
+      projectDir: this.getProjectDir(input),
+      raw,
+    };
+  }
+
+  parsePreCompactInput(raw: unknown): PreCompactEvent {
+    const input = raw as CodexHookInput;
+    return {
+      sessionId: this.extractSessionId(input),
+      projectDir: this.getProjectDir(input),
+      raw,
+    };
+  }
+
+  parseSessionStartInput(raw: unknown): SessionStartEvent {
+    const input = raw as CodexHookInput;
+    const rawSource = input.source ?? "startup";
+
+    let source: SessionStartEvent["source"];
+    switch (rawSource) {
+      case "compact":
+        source = "compact";
+        break;
+      case "resume":
+        source = "resume";
+        break;
+      case "clear":
+        source = "clear";
+        break;
+      default:
+        source = "startup";
+    }
+
+    return {
+      sessionId: this.extractSessionId(input),
+      source,
+      projectDir: this.getProjectDir(input),
+      raw,
+    };
+  }
+
+  // ── Response formatting ────────────────────────────────
+  // Codex CLI uses hookSpecificOutput wrapper for all hook responses.
+  // Unlike Claude Code, Codex does NOT support updatedInput or updatedMCPToolOutput.
+
+  formatPreToolUseResponse(response: PreToolUseResponse): unknown {
+    if (response.decision === "deny") {
+      return {
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "deny",
+          permissionDecisionReason:
+            response.reason ?? "Blocked by context-mode hook",
+        },
+      };
+    }
+    if (response.decision === "context" && response.additionalContext) {
+      // Codex does not support additionalContext in PreToolUse (fails open).
+      // Context injection works via PostToolUse and SessionStart instead.
+      return {};
+    }
+    // "allow" — return empty object for passthrough
+    return {};
+  }
+
+  formatPostToolUseResponse(response: PostToolUseResponse): unknown {
+    if (response.additionalContext) {
+      return {
+        hookSpecificOutput: {
+          hookEventName: "PostToolUse",
+          additionalContext: response.additionalContext,
+        },
+      };
+    }
+    return {};
+  }
+
+  formatPreCompactResponse(response: PreCompactResponse): unknown {
+    // Codex PreCompact currently accepts only universal hook fields.
+    // The hook script stores snapshots in context-mode's DB; SessionStart
+    // injects them after compaction.
+    return {};
+  }
+
+  formatSessionStartResponse(response: SessionStartResponse): unknown {
+    if (response.context) {
+      return {
+        hookSpecificOutput: {
+          hookEventName: "SessionStart",
+          additionalContext: response.context,
+        },
+      };
+    }
+    return {};
+  }
+
+  // ── Configuration ──────────────────────────────────────
+
+  getConfigDir(_projectDir?: string): string {
+    return resolveCodexConfigDir();
+  }
+
+  getSettingsPath(): string {
+    return join(this.getConfigDir(), "config.toml");
+  }
+
+  getSessionDir(): string {
+    // Issue #649: honor CONTEXT_MODE_DATA_DIR universal storage override
+    // before falling back to the $CODEX_HOME-rooted default. Settings.toml
+    // and hooks.json continue to live under getConfigDir() so the Codex CLI
+    // sees its own config in the expected place.
+    const override = resolveContextModeDataRoot();
+    const dir = override
+      ? join(override, "context-mode", "sessions")
+      : join(this.getConfigDir(), "context-mode", "sessions");
+    mkdirSync(dir, { recursive: true });
+    return dir;
+  }
+
+  // C2 narrowing (2026-05): the historical `getSessionDBPath` /
+  // `getSessionEventsPath` overrides were removed. Both delegated to the
+  // same canonical helpers (`resolveSessionDbPath` / `hashProjectDirCanonical`
+  // + `getWorktreeSuffix`) which already normalize the path internally —
+  // the explicit `normalizeWorktreePath` here was a no-op. Callers now reach
+  // the helpers directly through `adapter.getSessionDir()`.
+
+  getInstructionFiles(): string[] {
+    // Codex CLI honors AGENTS.md plus an optional override file.
+    return ["AGENTS.md", "AGENTS.override.md"];
+  }
+
+  getMemoryDir(projectDir?: string): string {
+    // Codex uses "memories" (plural), not the default "memory".
+    // Issue #649: honor CONTEXT_MODE_DATA_DIR for context-mode-owned
+    // persistent memory while preserving the platform-native plural folder
+    // name so legacy Codex tooling continues to find it when DATA_DIR is
+    // unset. Under the override, layout is `<DATA_DIR>/context-mode/memories`.
+    // Issue #663: scope by projectDir hash so parallel projects can't
+    // read each other's memory.
+    const override = resolveContextModeDataRoot();
+    const base = override
+      ? join(override, "context-mode", "memories")
+      : join(this.getConfigDir(), "memories");
+    if (!projectDir) return base;
+    return join(base, hashProjectDirCanonical(projectDir));
+  }
+
+  generateHookConfig(_pluginRoot: string): HookRegistration {
+    return {
+      PreToolUse: [
+        {
+          matcher: PRE_TOOL_USE_MATCHER_PATTERN,
+          hooks: [
+            {
+              type: "command",
+              command: CODEX_HOOK_COMMANDS.PreToolUse,
+            },
+          ],
+        },
+      ],
+      PostToolUse: [
+        {
+          matcher: "",
+          hooks: [
+            {
+              type: "command",
+              command: CODEX_HOOK_COMMANDS.PostToolUse,
+            },
+          ],
+        },
+      ],
+      SessionStart: [
+        {
+          matcher: "",
+          hooks: [
+            {
+              type: "command",
+              command: CODEX_HOOK_COMMANDS.SessionStart,
+            },
+          ],
+        },
+      ],
+      PreCompact: [
+        {
+          matcher: "",
+          hooks: [
+            {
+              type: "command",
+              command: CODEX_HOOK_COMMANDS.PreCompact,
+            },
+          ],
+        },
+      ],
+      UserPromptSubmit: [
+        {
+          matcher: "",
+          hooks: [
+            {
+              type: "command",
+              command: CODEX_HOOK_COMMANDS.UserPromptSubmit,
+            },
+          ],
+        },
+      ],
+      Stop: [
+        {
+          matcher: "",
+          hooks: [
+            {
+              type: "command",
+              command: CODEX_HOOK_COMMANDS.Stop,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  readSettings(): Record<string, unknown> | null {
+    // Codex CLI uses TOML format. Full TOML parsing is complex;
+    // return null for now. MCP configuration should be done manually
+    // or via a dedicated TOML library in the upgrade flow.
+    try {
+      const raw = readFileSync(this.getSettingsPath(), "utf-8");
+      // Return raw TOML as a single-key object for inspection
+      return { _raw_toml: raw };
+    } catch {
+      return null;
+    }
+  }
+
+  writeSettings(_settings: Record<string, unknown>): void {
+    // Codex CLI uses TOML format. Writing TOML requires a dedicated
+    // serializer. This is a no-op; TOML config should be edited
+    // manually or via the `codex` CLI tool.
+  }
+
+  // ── Diagnostics (doctor) ─────────────────────────────────
+
+  validateHooks(_pluginRoot: string): DiagnosticResult[] {
+    const results: DiagnosticResult[] = [];
+    const codexCliVersion = probeCodexCliVersion();
+
+    results.push({
+      check: "Codex CLI binary",
+      status: codexCliVersion ? "pass" : "warn",
+      message: codexCliVersion
+        ? `codex --version resolved to ${codexCliVersion}`
+        : "Could not run codex --version; hooks need the Codex CLI available on PATH",
+      ...(codexCliVersion ? {} : { fix: "Install Codex CLI or make codex available on PATH" }),
+    });
+
+    try {
+      const raw = readFileSync(this.getSettingsPath(), "utf-8");
+      const enabled = hasCodexHooksFeature(raw);
+      const deprecatedOnly = !enabled && hasDeprecatedCodexHooksFeature(raw);
+
+      results.push({
+        check: "Codex hooks feature flag",
+        status: enabled ? "pass" : "fail",
+        message: enabled
+          ? `[features].hooks enabled in ${this.getSettingsPath()}`
+          : deprecatedOnly
+            ? `[features].codex_hooks is deprecated; [features].hooks is missing in ${this.getSettingsPath()}`
+            : `[features].hooks missing from ${this.getSettingsPath()}`,
+        ...(enabled ? {} : { fix: "context-mode upgrade" }),
+      });
+    } catch {
+      results.push({
+        check: "Codex hooks feature flag",
+        status: "warn",
+        message: `Could not read ${this.getSettingsPath()}`,
+        fix: "context-mode upgrade",
+      });
+    }
+
+    const hookConfig = this.readHooksConfig();
+    if (!hookConfig.ok) {
+      if (hookConfig.reason === "missing") {
+        return results.concat([{
+          check: "Hooks config",
+          status: "fail",
+          message: `No readable ${this.getHooksPath()} found`,
+          fix: "Copy configs/codex/hooks.json to hooks.json or run context-mode upgrade",
+        }]);
+      }
+      if (hookConfig.reason === "invalid_json") {
+        return results.concat([{
+          check: "Hooks config",
+          status: "fail",
+          message: `${this.getHooksPath()} is not valid JSON: ${hookConfig.error}`,
+          fix: "Repair hooks.json so it contains valid JSON, then rerun context-mode upgrade if needed",
+        }]);
+      }
+
+      return results.concat([{
+        check: "Hooks config",
+        status: "fail",
+        message: `Could not read ${this.getHooksPath()}: ${hookConfig.error}`,
+        fix: "Check permissions and file accessibility for hooks.json, then rerun context-mode upgrade if needed",
+      }]);
+    }
+
+    if (!hookConfig.config.hooks) {
+      return results.concat([{
+        check: "Hooks config",
+        status: "fail",
+        message: `${this.getHooksPath()} is missing the top-level hooks object`,
+        fix: `Update ${this.getHooksPath()} to match configs/codex/hooks.json`,
+      }]);
+    }
+
+    const expected = this.generateHookConfig("");
+    const hookChecks = Object.entries(expected).map(([hookName, entries]) => {
+      const actualEntries = hookConfig.config.hooks?.[hookName];
+      const expectedEntry = entries[0];
+      const ok = Array.isArray(actualEntries)
+        && actualEntries.some((entry) => this.isExpectedHookEntry(hookName, entry, expectedEntry));
+      const missingStatus = hookName === "PreCompact" ? "warn" : "fail";
+
+      return {
+        check: `${hookName} hook`,
+        status: (ok ? "pass" : missingStatus) as "pass" | "warn" | "fail",
+        message: ok
+          ? `${hookName} hook configured in ${this.getHooksPath()}`
+          : hookName === "PreCompact"
+            ? `${hookName} hook missing or not pointing to context-mode; compaction snapshots require a Codex build that emits PreCompact`
+            : `${hookName} hook missing or not pointing to context-mode`,
+        fix: ok ? undefined : `Update ${this.getHooksPath()} to match configs/codex/hooks.json`,
+      };
+    });
+
+    // #603: surface duplicate context-mode entries per hook event. Codex fires
+    // every matching entry, so duplicates double the work, can saturate the
+    // MCP transport (`Transport closed`), and have been observed to inflate
+    // codex-tui.log into the multi-GB range. `context-mode upgrade` collapses
+    // them via `upsertManagedHookEntry`, so the fix is one command away.
+    const duplicateChecks: DiagnosticResult[] = [];
+    for (const hookName of Object.keys(expected)) {
+      const actualEntries = hookConfig.config.hooks?.[hookName];
+      if (!Array.isArray(actualEntries)) continue;
+      const managedCount = actualEntries.filter(
+        (entry) => this.isManagedContextModeEntry(hookName, entry as HookEntry),
+      ).length;
+      if (managedCount > 1) {
+        duplicateChecks.push({
+          check: `${hookName} duplicates`,
+          status: "warn",
+          message: `${managedCount} context-mode entries found for ${hookName} in ${this.getHooksPath()}; Codex will fire all of them`,
+          fix: "context-mode upgrade (collapses duplicate context-mode entries; preserves unrelated hooks)",
+        });
+      }
+    }
+
+    return results.concat(hookChecks, duplicateChecks);
+  }
+
+  checkPluginRegistration(): DiagnosticResult {
+    // Check for context-mode in [mcp_servers] section of config.toml
+    try {
+      const raw = readFileSync(this.getSettingsPath(), "utf-8");
+      const hasContextMode = raw.includes("context-mode");
+      const hasMcpSection =
+        raw.includes("[mcp_servers]") || raw.includes("[mcp_servers.");
+
+      if (hasContextMode && hasMcpSection) {
+        return {
+          check: "MCP registration",
+          status: "pass",
+          message: "context-mode found in [mcp_servers] config",
+        };
+      }
+
+      if (hasMcpSection) {
+        return {
+          check: "MCP registration",
+          status: "fail",
+          message:
+            "[mcp_servers] section exists but context-mode not found",
+          fix: `Add context-mode to [mcp_servers] in ${this.getSettingsPath()}`,
+        };
+      }
+
+      return {
+        check: "MCP registration",
+        status: "fail",
+        message: "No [mcp_servers] section in config.toml",
+        fix: `Add [mcp_servers.context-mode] to ${this.getSettingsPath()}`,
+      };
+    } catch {
+      return {
+        check: "MCP registration",
+        status: "warn",
+        message: `Could not read ${this.getSettingsPath()}`,
+      };
+    }
+  }
+
+  getInstalledVersion(): string {
+    // Codex uses standalone MCP registration; there is no platform-owned
+    // plugin version to compare against the context-mode npm package.
+    return "standalone";
+  }
+
+  // ── Upgrade ────────────────────────────────────────────
+
+  configureAllHooks(pluginRoot: string): string[] {
+    const hookConfig = this.readHooksConfig();
+    const changes: string[] = [];
+    let hookFile: CodexHooksFile;
+    if (hookConfig.ok) {
+      hookFile = hookConfig.config;
+    } else if (hookConfig.reason === "missing") {
+      hookFile = { hooks: {} };
+    } else if (hookConfig.reason === "invalid_json") {
+      const backupPath = this.backupFile(this.getHooksPath(), ".broken");
+      changes.push(`Backed up malformed Codex hooks to ${backupPath}`);
+      hookFile = { hooks: {} };
+    } else {
+      throw new Error(`Failed to update ${this.getHooksPath()}: ${hookConfig.error}`);
+    }
+
+    const hooks = hookFile.hooks && typeof hookFile.hooks === "object" && !Array.isArray(hookFile.hooks)
+      ? hookFile.hooks
+      : {};
+    const desiredHooks = this.generateHookConfig(pluginRoot);
+
+    for (const [hookName, entries] of Object.entries(desiredHooks)) {
+      this.upsertManagedHookEntry(hooks, hookName, entries[0], changes);
+    }
+
+    if (changes.length > 0) {
+      hookFile.hooks = hooks;
+      this.writeHooksConfig(hookFile);
+      changes.push(`Wrote native Codex hooks to ${this.getHooksPath()}`);
+    }
+
+    const settingsPath = this.getSettingsPath();
+    let settingsRaw = "";
+    try {
+      settingsRaw = readFileSync(settingsPath, "utf-8");
+    } catch {
+      settingsRaw = "";
+    }
+
+    const enabledSettings = ensureCodexHooksFeature(settingsRaw);
+    if (enabledSettings.changed) {
+      const newline = enabledSettings.text.includes("\r\n") ? "\r\n" : "\n";
+      const text = enabledSettings.text.endsWith("\n")
+        ? enabledSettings.text
+        : `${enabledSettings.text}${newline}`;
+      mkdirSync(dirname(settingsPath), { recursive: true });
+      writeFileSync(settingsPath, text, "utf-8");
+      changes.push("Enabled Codex hooks feature flag");
+    }
+
+    return changes;
+  }
+
+  backupSettings(): string | null {
+    let firstBackupPath: string | null = null;
+    for (const settingsPath of [this.getHooksPath(), this.getSettingsPath()]) {
+      try {
+        accessSync(settingsPath, constants.R_OK);
+        const backupPath = this.backupFile(settingsPath);
+        firstBackupPath ??= backupPath;
+      } catch {
+        continue;
+      }
+    }
+    return firstBackupPath;
+  }
+
+
+
+  setHookPermissions(_pluginRoot: string): string[] {
+    // Hook permissions are set during plugin install
+    return [];
+  }
+
+  updatePluginRegistry(_pluginRoot: string, _version: string): void {
+    // Codex CLI has no plugin registry
+  }
+
+  getRoutingInstructions(): string {
+    const instructionsPath = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "..",
+      "configs",
+      "codex",
+      "AGENTS.md",
+    );
+    try {
+      return readFileSync(instructionsPath, "utf-8");
+    } catch {
+      // Fallback inline instructions
+      return "# context-mode\n\nUse context-mode MCP tools (execute, execute_file, batch_execute, fetch_and_index, search) instead of bash/cat/curl for data-heavy operations.";
+    }
+  }
+
+  // ── Internal helpers ───────────────────────────────────
+
+  /**
+   * Resolve the project directory for a Codex hook input.
+   * Priority: input.cwd > CODEX_PROJECT_DIR env > process.cwd().
+   * Mirrors the cursor / opencode pattern so downstream hooks always
+   * receive a defined projectDir even under worktrees or when the
+   * platform omits cwd from the wire payload.
+   */
+  private getProjectDir(input: CodexHookInput): string {
+    return input.cwd ?? process.env.CODEX_PROJECT_DIR ?? process.cwd();
+  }
+
+  getHooksPath(): string {
+    return join(this.getConfigDir(), "hooks.json");
+  }
+
+  private backupFile(filePath: string, suffix = ""): string {
+    const backupPath = suffix
+      ? `${filePath}${suffix}-${new Date().toISOString().replace(/[:.]/g, "-")}.bak`
+      : `${filePath}.bak`;
+    copyFileSync(filePath, backupPath);
+    return backupPath;
+  }
+
+  private readHooksConfig(): HooksConfigReadResult {
+    const hooksPath = this.getHooksPath();
+    try {
+      return { ok: true, config: JSON.parse(readFileSync(hooksPath, "utf-8")) as CodexHooksFile };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const code = typeof error === "object" && error !== null && "code" in error
+        ? String((error as { code?: unknown }).code ?? "")
+        : "";
+
+      if (code === "ENOENT") {
+        return { ok: false, reason: "missing" };
+      }
+      if (error instanceof SyntaxError) {
+        return { ok: false, reason: "invalid_json", error: message };
+      }
+      return { ok: false, reason: "read_error", error: message };
+    }
+  }
+
+  private writeHooksConfig(config: CodexHooksFile): void {
+    const hooksPath = this.getHooksPath();
+    mkdirSync(dirname(hooksPath), { recursive: true });
+    writeFileSync(hooksPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+  }
+
+  private upsertManagedHookEntry(
+    hooks: HookRegistration,
+    hookName: string,
+    expectedEntry: HookEntry,
+    changes: string[],
+  ): void {
+    const currentEntries = Array.isArray(hooks[hookName]) ? [...hooks[hookName]] : [];
+    const managedIndices = currentEntries
+      .map((entry, index) => this.isManagedContextModeEntry(hookName, entry) ? index : -1)
+      .filter((index) => index >= 0);
+
+    if (managedIndices.length === 0) {
+      currentEntries.push(expectedEntry);
+      hooks[hookName] = currentEntries;
+      changes.push(`Added ${hookName} hook`);
+      return;
+    }
+
+    const primaryIndex = managedIndices[0];
+    if (JSON.stringify(currentEntries[primaryIndex]) !== JSON.stringify(expectedEntry)) {
+      currentEntries[primaryIndex] = expectedEntry;
+      changes.push(`Updated ${hookName} hook`);
+    }
+
+    for (const duplicateIndex of managedIndices.slice(1).reverse()) {
+      currentEntries.splice(duplicateIndex, 1);
+      changes.push(`Removed duplicate ${hookName} context-mode hook`);
+    }
+
+    hooks[hookName] = currentEntries;
+  }
+
+  private isExpectedHookEntry(
+    hookName: string,
+    entry: HookEntry,
+    expectedEntry: HookEntry,
+  ): boolean {
+    if (!entry || typeof entry !== "object") return false;
+    if (hookName === "PreToolUse" && entry.matcher !== expectedEntry.matcher) {
+      return false;
+    }
+    return this.entryContainsManagedCommand(hookName, entry);
+  }
+
+  private isManagedContextModeEntry(hookName: string, entry: HookEntry): boolean {
+    if (!entry || typeof entry !== "object") return false;
+    return this.entryContainsManagedCommand(hookName, entry);
+  }
+
+  private entryContainsManagedCommand(hookName: string, entry: HookEntry): boolean {
+    const normalizedCommands = (Array.isArray(entry.hooks) ? entry.hooks : [])
+      .map((hook) => this.normalizeCommand(hook.command))
+      .filter((command) => command.length > 0);
+    const expectedCliCommand = this.normalizeCommand(
+      CODEX_HOOK_COMMANDS[hookName as keyof typeof CODEX_HOOK_COMMANDS] ?? "",
+    );
+    const legacySuffixes = LEGACY_HOOK_PATH_SUFFIXES[hookName as keyof typeof LEGACY_HOOK_PATH_SUFFIXES] ?? [];
+
+    return normalizedCommands.some((command) =>
+      command.includes(expectedCliCommand)
+      || legacySuffixes.some((suffix) => command.includes(suffix)),
+    );
+  }
+
+  private normalizeCommand(command: string | undefined): string {
+    return (command ?? "").replace(/\\/g, "/");
+  }
+
+  /**
+   * Extract session ID from Codex CLI hook input.
+   * Priority: session_id field > fallback to ppid.
+   */
+  private extractSessionId(input: CodexHookInput): string {
+    if (input.session_id) return input.session_id;
+    return `pid-${process.ppid}`;
+  }
+}

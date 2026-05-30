@@ -1,0 +1,74 @@
+{
+  "version": 2,
+  "plugins": {
+    "clangd-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/.claude/plugins/cache/claude-plugins-official/clangd-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-05-30T14:04:37.576Z",
+        "lastUpdated": "2026-05-30T14:04:37.576Z",
+        "gitCommitSha": "c40770ae5a1d6855fce096c5b747e709ec946b2b"
+      }
+    ],
+    "swift-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/.claude/plugins/cache/claude-plugins-official/swift-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-05-30T14:04:37.576Z",
+        "lastUpdated": "2026-05-30T14:04:37.576Z",
+        "gitCommitSha": "c40770ae5a1d6855fce096c5b747e709ec946b2b"
+      }
+    ],
+    "caveman@caveman": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/.claude/plugins/cache/caveman/caveman/655b7d9c5431",
+        "version": "655b7d9c5431",
+        "installedAt": "2026-05-30T14:04:37.576Z",
+        "lastUpdated": "2026-05-30T14:04:37.576Z",
+        "gitCommitSha": "655b7d9c5431f822264b7732e9901c5578ac84cf"
+      }
+    ],
+    "context-mode@context-mode": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/dotfiles/claude/.claude/plugins/cache/context-mode/context-mode/1.0.151",
+        "version": "1.0.151",
+        "installedAt": "2026-05-30T14:04:37.576Z",
+        "lastUpdated": "2026-05-30T14:16:30.562Z",
+        "gitCommitSha": "824f0427bf67a5c121fb1bec00696ca9ab9058a6"
+      }
+    ],
+    "agentmemory@agentmemory": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/.claude/plugins/cache/agentmemory/agentmemory/0.9.24",
+        "version": "0.9.24",
+        "installedAt": "2026-05-30T14:04:37.576Z",
+        "lastUpdated": "2026-05-30T14:04:37.576Z",
+        "gitCommitSha": "fd9e3bd42d6208a33f0ee9de1442fdbb60eab106"
+      }
+    ],
+    "frontend-design@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/.claude/plugins/cache/claude-plugins-official/frontend-design/unknown",
+        "version": "unknown",
+        "installedAt": "2026-05-30T14:04:37.576Z",
+        "lastUpdated": "2026-05-30T14:07:21.510Z",
+        "gitCommitSha": "c40770ae5a1d6855fce096c5b747e709ec946b2b"
+      }
+    ],
+    "lua-lsp@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/hugopuybareau/.claude/plugins/cache/claude-plugins-official/lua-lsp/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-05-30T14:38:29.523Z",
+        "lastUpdated": "2026-05-30T14:38:29.523Z"
+      }
+    ]
+  }
+}
