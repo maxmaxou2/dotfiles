@@ -25,6 +25,8 @@ brew "gdb"
 brew "git"
 # Git extension for versioning large files
 brew "git-lfs"
+# GitHub CLI
+brew "gh"
 # Improved top (interactive process viewer)
 brew "htop"
 # Lightweight and flexible command-line JSON processor
@@ -100,6 +102,34 @@ cask "basictex"
 cask "gemini"
 # Secure tunnels to localhost
 cask "ngrok"
+# Web browser with built-in ad blocker
+cask "brave-browser"
+# Voice and text chat platform
+cask "discord"
+# Google web browser
+cask "google-chrome"
+# macOS keyboard customisation
+cask "karabiner-elements"
+# Knowledge base that works on top of a local folder of plain text Markdown files
+cask "obsidian"
+# Run large language models locally (GUI companion to the CLI)
+cask "ollama"
+# Fast and secure web browser
+cask "opera"
+# Productivity tool that lets you control your desktop with a few keystrokes
+cask "raycast"
+# Collaboration tool used for business messaging
+cask "slack"
+# Music streaming service
+cask "spotify"
+# Open-source code editor
+cask "visual-studio-code"
+# Cross-platform messaging application
+cask "whatsapp"
+# Administration tool for PostgreSQL
+cask "pgadmin4"
+# Music player that supports a wide variety of formats
+cask "strawberry"
 vscode "charliermarsh.ruff"
 vscode "davidanson.vscode-markdownlint"
 vscode "dbaeumer.vscode-eslint"
