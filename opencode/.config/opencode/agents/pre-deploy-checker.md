@@ -32,11 +32,12 @@ Do NOT invent findings to fill categories. A clean area is a passed check, repor
 
 0. `git diff main...HEAD --name-only` to scope what changed.
 1. If `code-review-graph` is available, use `code-review-graph_detect_changes_tool` / `code-review-graph_get_impact_radius_tool` to understand change scope first.
-2. `rtk` silently rewrites `grep`/`find`/`cat`/`ls` to token-efficient output — trust it, don't fight it. For commands with large output, use `context-mode_ctx_batch_execute` / `context-mode_ctx_execute` so raw bytes stay out of context; print only findings.
+2. `rtk` silently rewrites `grep`/`find`/`cat`/`ls` to token-efficient output — trust it, don't fight it.
+3. HARD RULE: scanning/searching/analyzing file CONTENTS (`grep`/`rg`/`cat`/`find`/`head`/`tail` over file bytes, diffs, migration files, Dockerfiles) MUST go through `context-mode` sandbox tools (`ctx_execute_file`, `ctx_execute`, `ctx_batch_execute`) so raw bytes stay in the sandbox and you print only the findings. Reserve raw bash for state/metadata only (`git diff main...HEAD --name-only`, file existence). This is your single biggest token lever — past runs burned 4M+ tokens on raw file-read loops.
 
 ## Output format
 
-Be terse. Only emit sections that have content (always emit Status).
+Be terse. Only emit sections that have content (always emit Status). Write the problem/why prose in caveman (full intensity) for token efficiency — your caller parses it natively. Keep headings, `file:line`, env var names, and commands exact.
 
 ```
 # Pre-deploy readiness: PASS | WARN | FAIL

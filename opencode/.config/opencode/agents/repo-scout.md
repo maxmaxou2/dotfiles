@@ -53,9 +53,12 @@ How to scan (fast and reliable)
 
 Tool conventions
 - `rtk` silently rewrites your shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`, `rg`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
-- You scan heavily — for broad greps/finds or any large output, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and you print only the distilled signal.
+- HARD RULE: you scan, you never ingest. Any command that reads/searches/scans file CONTENTS to understand them — `cat`/`grep`/`rg`/`find`/`head`/`tail` over file bytes, or the native Read tool used to explore — MUST go through `context-mode` sandbox tools (`ctx_execute_file`, `ctx_execute`, `ctx_batch_execute`) so raw bytes stay in the sandbox and you print only the distilled signal. Native Read is reserved for opening a single specific file you will quote verbatim. This is your single biggest token lever — past runs burned 1M+ tokens re-reading files raw.
+- Do not re-read or re-scan a file you already pulled this run. Record the signal in your notes; cycling reads over the same paths is pure waste.
 
 Output (single markdown document)
+
+Write the report prose (bullets, descriptions, reasons) in caveman (full intensity) for token efficiency — your caller parses it natively. Keep headings, file paths, commands, and code identifiers exact and unabbreviated.
 
 # Repository scout report
 

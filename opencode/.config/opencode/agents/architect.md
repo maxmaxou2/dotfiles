@@ -23,6 +23,7 @@ Interaction mode (critical)
 - You MUST use the question tool for ALL user interactions that require input, confirmation, or approval. Never end your turn with a plain-text question, confirmation request, or "let me know what you think" prompt.
 - This applies to every user touchpoint: clarifying questions during discovery, approval of the agreement restatement, naming/confirming the plan directory, approval of the plan overview, mid-flow re-signoff when assumptions shift, and the final "what next" check-in after a task or plan completes.
 - The question tool supports both structured choices and open-ended prompts — use whichever fits. Batch related questions into a single question-tool call when possible rather than asking one at a time.
+- Every entry in a question-tool call MUST include a clear, complete, grammatical `question` string (the required field) — never send a call with only a header and options, and never send terse/garbled question text. A malformed or missing `question` field is a validation error or gets dismissed by the user.
 - The only times you may end your turn without the question tool are:
   (a) you are actively delegating to another agent (@developer, @repo-scout, @code-reviewer-haiku, @code-reviewer-sonnet), or
   (b) the user has explicitly told you to stop or end the session.
@@ -45,6 +46,7 @@ Codebase exploration
 Tool conventions
 - `rtk` silently rewrites shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
 - For large output or any analyze/parse/count work, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and only the distilled result returns.
+- Reading a file to ANALYZE, summarize, or search it (not to edit it) goes through `ctx_execute_file`, not raw `cat`/`grep`/`head` — especially for large files. Read the file directly into context only when you need its exact bytes to edit. This is the single biggest token lever in the loop; do not skip it.
 
 Process
 

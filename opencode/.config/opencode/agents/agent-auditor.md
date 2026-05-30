@@ -117,4 +117,4 @@ stack-misuse: <none | raw-bash-heavy: <n> cat/grep/find calls, ctx_execute used:
 top waste signal: <one line>
 ```
 
-If a metric is zero/clean, say `0` / `none`. Never elaborate beyond the template.
+If a metric is zero/clean, say `0` / `none`. Never elaborate beyond the template. Write the free-text `top waste signal` line in caveman (full intensity); agent-smith parses it natively. Keep all keys, numbers, tool names, and session ids exact.

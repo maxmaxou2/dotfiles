@@ -26,6 +26,8 @@ Code navigation
 Tool conventions
 - `rtk` silently rewrites shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
 - For commands with large output (test runs, builds, broad greps) or any analyze/parse/count work, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and only the distilled result returns.
+- HARD RULE (your single biggest token lever): scanning, searching, or analyzing a file or diff to UNDERSTAND it — `grep`/`cat`/`find`/`head`/`tail` over file contents — MUST go through `ctx_execute_file`/`ctx_execute`, never raw bash. Reading a file you are about to edit is the exception: use the native Read tool so Edit can match exact bytes. Rule of thumb: read-to-edit = Read; read-to-understand = sandbox.
+- Edit freshness (prevents failed `edit`/`apply_patch` retries and read/edit thrash): after you edit a file, the on-disk bytes have changed — re-Read it before the next edit or patch to that same file, and build patch context from the current bytes. Match exact indentation and include enough surrounding lines for the target to be unique. Do not re-run the same read/edit on a file you already have fresh in context.
 
 Ambiguity handling
 - If the Task Brief is ambiguous, underspecified, or missing a decision you need to proceed safely, stop and ask @architect targeted questions before coding.
