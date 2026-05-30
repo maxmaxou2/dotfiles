@@ -36,7 +36,7 @@ stay-alert:
 context-mode:
 	@command -v npm >/dev/null 2>&1 || { echo "npm not found — install node first (brew install node)"; exit 1; }
 	npm install -g context-mode
-	@context-mode --version >/dev/null 2>&1 && echo "context-mode installed: $$(context-mode --version)" || echo "context-mode install verify failed"
+	@command -v context-mode >/dev/null 2>&1 && echo "context-mode installed" || echo "context-mode install verify failed"
 	@mkdir -p $(HOME)/.config/opencode
 	@test -L $(HOME)/.config/opencode/AGENTS.md || ln -sf ../../dotfiles/opencode/.config/opencode/AGENTS.md $(HOME)/.config/opencode/AGENTS.md
 	@echo "AGENTS.md symlinked: $$(readlink $(HOME)/.config/opencode/AGENTS.md)"
@@ -44,7 +44,7 @@ context-mode:
 agentmemory:
 	@command -v npm >/dev/null 2>&1 || { echo "npm not found — install node first (brew install node)"; exit 1; }
 	npm install -g @agentmemory/agentmemory
-	@agentmemory --version >/dev/null 2>&1 && echo "agentmemory installed: $$(agentmemory --version 2>/dev/null || echo ok)" || echo "agentmemory install verify failed"
+	@command -v agentmemory >/dev/null 2>&1 && echo "agentmemory installed" || echo "agentmemory install verify failed"
 	@mkdir -p $(HOME)/.agentmemory
 	@test -f $(HOME)/.agentmemory/.env || agentmemory init || true
 	@echo "NOTE: fill provider keys in ~/.agentmemory/.env (LLM + embeddings) — not committed (secrets)."
@@ -58,7 +58,7 @@ agentmemory:
 	@echo "Claude Code: hooks+skills+MCP via plugin. opencode: plugin+MCP+commands via 'make stow' (opencode package)."
 
 litellm:
-	@command -v uv >/dev/null 2>&1 || { echo "uv not found — install first (brew install uv)"; exit 1; }
+	@command -v uv >/dev/null 2>&1 || brew install uv
 	uv tool install "litellm[proxy]" --with google-cloud-aiplatform --with google-auth --force
 	@mkdir -p $(HOME)/.config/litellm
 	@if [ ! -f $(HOME)/.config/litellm/config.yaml ]; then \
@@ -93,7 +93,7 @@ tmux-plugins:
 
 verify-symlinks:
 	@echo "Verifying critical symlinks..."
-	@for f in $(HOME)/.claude/settings.json $(HOME)/.claude/hooks $(HOME)/.claude/skills $(HOME)/.config/opencode/opencode.json $(HOME)/.config/opencode/AGENTS.md $(HOME)/.Brewfile; do \
+	@for f in $(HOME)/.claude $(HOME)/.config/opencode $(HOME)/.config/opencode/AGENTS.md $(HOME)/.Brewfile; do \
 		if [ -L "$$f" ]; then echo "  ok  $$f -> $$(readlink $$f)"; \
 		elif [ -e "$$f" ]; then echo "  WARN $$f exists but is NOT a symlink (run 'make stow' after removing real file)"; \
 		else echo "  MISS $$f missing"; fi; \

@@ -34,3 +34,6 @@ if [[ -n ${ZSH_VERSION-} ]] && command -v stay-alert >/dev/null 2>&1; then
   add-zsh-hook precmd __stay_alert_precmd
 fi
 # stay-alert end
+
+# Ensure ~/.local/bin is on PATH (claude, uv, etc. — before uv's env script)
+export PATH="$HOME/.local/bin:$PATH"

@@ -1,4 +1,3 @@
-tap "homebrew/brew"
 tap "minio/stable"
 tap "oven-sh/bun"
 tap "vjeantet/tap"
@@ -84,6 +83,8 @@ brew "tmux"
 brew "tmuxp"
 # Command-line calendar events (used by tmux catppuccin meetings module)
 brew "ical-buddy"
+# Python package manager / tool runner (required for litellm)
+brew "uv"
 # Native notification CLI used by some scripts
 brew "vjeantet/tap/alerter"
 # Watch files and take action when they change
