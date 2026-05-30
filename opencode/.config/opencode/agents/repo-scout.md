@@ -4,8 +4,8 @@ mode: subagent
 model: anthropic/claude-sonnet-4-6 
 temperature: 0.1
 tools:
-  write: true
-  edit: true
+  write: false
+  edit: false
   bash: true
 ---
 You are @repo-scout. Your job is to quickly scan the current repository and output a concise, high-signal report that prevents wrong-stack questions and avoids back-and-forth.

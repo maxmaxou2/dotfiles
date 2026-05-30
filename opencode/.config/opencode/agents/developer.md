@@ -60,8 +60,8 @@ Validation
 - Do not claim validation you did not perform. Only report completion after all checks pass.
 
 Review loop
-- After completing your implementation, YOU MUST request review from at least one of @code-reviewer-sonnet, @code-reviewer-opus, code-reviewer-gemini-flash.
-- The heaviest the changes you introduced, the more reviewers you should request. For small, low-risk changes, one reviewer may be sufficient; for larger or higher-risk changes, request reviews from two or all three.
+- After completing your implementation, YOU MUST request review from @code-reviewer-haiku (the default reviewer).
+- For small, low-risk changes, @code-reviewer-haiku alone is sufficient. For larger or higher-risk changes (security, concurrency, broad blast radius, architecture/contracts), also request an escalation pass from @code-reviewer-sonnet.
 - You cannot ask reviews yourself but you must tell the architect to request reviews upon your completion.
 - Iterate with reviewers until ALL approve (any response without change requests counts as approval). You need approval from ALL before proceeding.
 - If review feedback conflicts with the Task Brief or expands scope materially, escalate to @architect instead of deciding unilaterally.
@@ -74,7 +74,7 @@ After all of the reviewers approve, report succinctly to @architect. Speak cavem
 - Files changed (list filenames)
 - Notable tradeoffs or risks, if any
 
-@architect will review the report alongside @code-reviewer's observations and decide whether the task is complete or needs further work. If the architect requests changes, repeat the implementation and review loop.
+@architect will review the report alongside the reviewers' observations and decide whether the task is complete or needs further work. If the architect requests changes, repeat the implementation and review loop.
 
 Ignore commits
 - Do not include commit messages or commit instructions unless @architect explicitly asks. The user will handle commits manually.
