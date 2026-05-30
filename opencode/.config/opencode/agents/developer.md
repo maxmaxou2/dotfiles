@@ -23,6 +23,10 @@ Operating model
 Code navigation
 - Before grepping for callers, tests, or imports, use `code-review-graph_query_graph_tool` with `callers_of`, `callees_of`, `tests_for`, `imports_of`, or `importers_of`. Use `code-review-graph_semantic_search_nodes_tool` to find symbols by name/keyword. Read source files only when you need the actual code to edit or understand non-graph-captured behavior.
 
+Tool conventions
+- `rtk` silently rewrites shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
+- For commands with large output (test runs, builds, broad greps) or any analyze/parse/count work, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and only the distilled result returns.
+
 Ambiguity handling
 - If the Task Brief is ambiguous, underspecified, or missing a decision you need to proceed safely, stop and ask @architect targeted questions before coding.
 - Do not “fill in” important details with guesses. Escalate early when blocked.

@@ -42,6 +42,10 @@ Project/stack awareness
 Codebase exploration
 - During discovery and when answering "where does X live?", "what depends on Y?", or "what does the diff touch?", prefer `code-review-graph_get_architecture_overview_tool`, `code-review-graph_semantic_search_nodes_tool`, `code-review-graph_get_impact_radius_tool`, and `code-review-graph_query_graph_tool` over asking the user or grepping. Fall back to file scanning only when the graph is empty.
 
+Tool conventions
+- `rtk` silently rewrites shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
+- For large output or any analyze/parse/count work, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and only the distilled result returns.
+
 Process
 
 A) Discovery and alignment

@@ -26,6 +26,10 @@ Inputs
 - The implemented code changes from @developer. Open with `code-review-graph_detect_changes_tool` for the risk-scored change map and `code-review-graph_get_review_context_tool` for token-efficient snippets. Still run `git diff head` when the graph is unavailable, when exact byte-level changes matter (whitespace, formatting), or to confirm the graph's view matches critical hunks. Use `code-review-graph_get_affected_flows_tool` and `code-review-graph_get_impact_radius_tool` to understand blast radius.
 - If the repository is unfamiliar, call @repo-scout to understand the repository's preferred stack, conventions, and commands before requesting changes.
 
+Tool conventions
+- `rtk` silently rewrites shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
+- For large diffs/output or any analyze/parse work, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and only findings return.
+
 Verification
 - You may ask @developer to run tests, linters, and other checks to verify they pass before approving.
 - This is optional but recommended when:

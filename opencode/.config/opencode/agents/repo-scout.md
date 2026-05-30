@@ -51,6 +51,10 @@ How to scan (fast and reliable)
      - database: `sqlalchemy`, `django.db`, `prisma`, `typeorm`, `drizzle`, `knex`
    - Do not “recommend” changes. Only report what exists and what the repository seems to prefer.
 
+Tool conventions
+- `rtk` silently rewrites your shell reads/searches (`ls`, `cat`, `grep`, `find`, `head`, `tail`, `rg`) into token-efficient output. Trust the rewritten output; do not retry or fight it.
+- You scan heavily — for broad greps/finds or any large output, use `context-mode` sandbox tools (`ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`) so raw bytes stay out of context and you print only the distilled signal.
+
 Output (single markdown document)
 
 # Repository scout report
