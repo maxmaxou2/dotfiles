@@ -6,19 +6,31 @@ A journey begins.
 
 ## Setup/
 
-### One-shot
+### One-shot (fresh Mac)
 
-After Homebrew is installed (see below), from this directory:
+Paste this in Terminal — it installs Homebrew + git, clones the repo (HTTPS), and runs `make setup`:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+  && eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)" \
+  && brew install git \
+  && git clone https://github.com/maxmaxou2/dotfiles.git ~/dotfiles \
+  && cd ~/dotfiles \
+  && make setup
+```
+
+### Breakdown (idempotent, re-running is safe)
+
+From inside the cloned repo (`~/dotfiles`):
 
 ```
 make setup
 ```
 
-This runs `make brew`, `make stow`, and `make stay-alert`. Targets are idempotent — re-running is safe.
+This runs `make xcode-clt`, `make brew`, `make stow`, and `make stay-alert` (see [Makefile](Makefile) for all targets).
 
-### HomeBrew related
+### HomeBrew
 ```
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ln -s ~/dotfiles/.Brewfile ~/.Brewfile
 brew bundle --global
 ```

@@ -23,7 +23,7 @@ xcode-clt:
 
 brew:
 	@test -L $(HOME)/.Brewfile || ln -s $(CURDIR)/.Brewfile $(HOME)/.Brewfile
-	brew bundle --global
+	-brew bundle --global
 
 stow:
 	stow --restow $(STOW_PACKAGES)

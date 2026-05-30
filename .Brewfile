@@ -1,4 +1,4 @@
-tap "homebrew/services"
+tap "homebrew/brew"
 tap "minio/stable"
 tap "oven-sh/bun"
 tap "vjeantet/tap"
