@@ -1,12 +1,12 @@
-.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory litellm verify-symlinks
+.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory litellm tmux-plugins verify-symlinks
 
 STAY_ALERT_REPO ?= git@github.com:maxmaxou2/stay-alert.git
 STAY_ALERT_DIR  ?= $(HOME)/src/stay-alert
-STOW_PACKAGES   ?= clang-format claude conda hammerspoon karabiner nvim opencode pdb rich ssh tmux zsh
+STOW_PACKAGES   ?= clang-format claude conda hammerspoon karabiner nvim opencode pdb rich ssh tmux tmuxp zsh
 
 help:
 	@echo "Targets:"
-	@echo "  setup            Run xcode-clt, brew, stow, stay-alert, context-mode"
+	@echo "  setup            Run xcode-clt, brew, stow, stay-alert, context-mode, tmux-plugins"
 	@echo "  xcode-clt        Install Xcode Command Line Tools (provides swiftc) if missing"
 	@echo "  brew             Symlink .Brewfile and run brew bundle --global"
 	@echo "  stow             Symlink dotfile packages via GNU stow (--restow for idempotency)"
@@ -14,9 +14,10 @@ help:
 	@echo "  context-mode     Install context-mode globally via npm (opencode plugin + claude hook)"
 	@echo "  agentmemory      Install agentmemory (npm), launchd autostart server, claude plugin"
 	@echo "  litellm          Install litellm proxy (uv), launchd autostart, Vertex/Gemini for agentmemory compression"
+	@echo "  tmux-plugins     Bootstrap TPM and install tmux plugins"
 	@echo "  verify-symlinks  Check that critical claude/opencode configs are symlinked into HOME"
 
-setup: xcode-clt brew stow stay-alert context-mode agentmemory litellm verify-symlinks
+setup: xcode-clt brew stow stay-alert context-mode agentmemory litellm tmux-plugins verify-symlinks
 
 xcode-clt:
 	@xcode-select -p >/dev/null 2>&1 || xcode-select --install
@@ -74,6 +75,21 @@ litellm:
 	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
 	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
 	@sleep 12; curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1 && echo "litellm healthy: http://localhost:4000" || echo "litellm not responding yet (check ~/.config/litellm/litellm.log)"
+
+tmux-plugins:
+	@TPM_DIR="$(HOME)/.tmux/plugins/tpm"; \
+	if [ ! -d "$$TPM_DIR" ]; then \
+		echo "Cloning tmux-plugins/tpm..."; \
+		git clone https://github.com/tmux-plugins/tpm "$$TPM_DIR"; \
+	else \
+		echo "tpm already cloned"; \
+	fi
+	@if command -v tmux >/dev/null 2>&1 && tmux list-sessions >/dev/null 2>&1; then \
+		echo "Installing tmux plugins (via tpm)..."; \
+		$(HOME)/.tmux/plugins/tpm/bin/install_plugins; \
+	else \
+		echo "tmux not running — plugins will install on next tmux start (prefix+I)"; \
+	fi
 
 verify-symlinks:
 	@echo "Verifying critical symlinks..."
