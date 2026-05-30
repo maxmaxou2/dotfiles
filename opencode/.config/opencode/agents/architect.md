@@ -75,25 +75,19 @@ B) Plan directory and task workflow (after signoff)
 
 C) Task Brief files (the only artifact @developer relies on)
 For each task, write a Task Brief to a file in the plan directory:
-- Filename format: 001-task-title.md, 002-task-title.md, ...
-  - Use 3-digit zero padding.
-  - Use a short, descriptive, filesystem-friendly title.
-  - Increment monotonically; do not renumber prior tasks.
+- Filename: 001-task-title.md, 002-..., 3-digit zero-pad, short descriptive title, increment monotonically (never renumber prior tasks).
 
-Task Brief style
-- Laconic but specific enough that a junior/mid engineer can execute successfully.
-- Assume a mid-level developer; avoid step-by-step hand-holding.
-- Include major caveats and the minimum context needed for this task only.
+Brevity bar
+- A brief is a POINTER, not a spec dump. Target <= ~25 lines. If longer, you are over-explaining.
+- @developer is mid-level and reads the codebase + graph itself. Do NOT restate what code, types, or the graph already show. Do NOT hand-hold steps.
+- Include a heading ONLY when it carries signal for THIS task. Omit empty/obvious headings; no filler scaffolding.
 
-Task Brief contents (keep concise)
-- Context: only what's needed for this task
-- Objective: what changes in the system
-- Scope: what to do now (what files/areas are likely touched if relevant)
-- Non-goals / Later: explicit list of what NOT to do
-- Constraints / Caveats: only relevant ones
-- Acceptance criteria:
-  - Include criteria only when it would not be obvious from the task itself (this should be rare).
-  - Do not add verification/run-command instructions; assume the developer can verify.
+Content (only what earns its place)
+- Objective: what changes in the system (almost always needed).
+- Scope / files: only if non-obvious where work lands.
+- Non-goals: only real YAGNI traps worth naming.
+- Constraints / caveats: only the ones that bite.
+- Acceptance criteria: only when NOT obvious from the task (rare). No run/verify instructions; the developer verifies.
 
 D) Implementation and review loop
 1) After writing the Task Brief file, instruct @developer to implement ONLY that task, referencing the Task Brief file as the source of truth.
