@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/opt/homebrew/Cellar/node/26.0.0/bin/node\" \"/Users/maxence/.claude/hooks/caveman-activate.js\"",
+            "command": "node \"$HOME/.claude/hooks/caveman-activate.js\"",
             "timeout": 5,
             "statusMessage": "Loading caveman mode..."
           }
@@ -36,7 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Users/maxence/.claude/hooks/context-mode-cache-heal.mjs\""
+            "command": "\"$HOME/.claude/hooks/context-mode-cache-heal.mjs\""
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/opt/homebrew/Cellar/node/26.0.0/bin/node\" \"/Users/maxence/.claude/hooks/caveman-mode-tracker.js\"",
+            "command": "node \"$HOME/.claude/hooks/caveman-mode-tracker.js\"",
             "timeout": 5,
             "statusMessage": "Tracking caveman mode..."
           }
@@ -67,7 +67,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash \"/Users/maxence/.claude/hooks/caveman-statusline.sh\""
+    "command": "bash \"$HOME/.claude/hooks/caveman-statusline.sh\""
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
