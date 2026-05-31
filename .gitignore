@@ -23,5 +23,6 @@ opencode/.config/opencode/misc/coding-team/
 
 # --- Secrets (never commit) ---
 litellm/config.yaml          # real litellm config holds master_key (use config.yaml.example)
+agentmemory/.env             # real agentmemory env holds litellm key (use .env.example)
 **/*-sa.json                 # GCP service-account keys
 **/vertex-sa.json

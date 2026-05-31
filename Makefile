@@ -46,8 +46,15 @@ agentmemory:
 	npm install -g @agentmemory/agentmemory
 	@command -v agentmemory >/dev/null 2>&1 && echo "agentmemory installed" || echo "agentmemory install verify failed"
 	@mkdir -p $(HOME)/.agentmemory
-	@test -f $(HOME)/.agentmemory/.env || agentmemory init || true
-	@echo "NOTE: fill provider keys in ~/.agentmemory/.env (LLM + embeddings) — not committed (secrets)."
+	@if [ ! -f $(HOME)/.agentmemory/.env ]; then \
+		cp $(CURDIR)/agentmemory/.env.example $(HOME)/.agentmemory/.env; \
+		chmod 600 $(HOME)/.agentmemory/.env; \
+		echo "ACTION REQUIRED: ~/.agentmemory/.env created from template."; \
+		echo "                 Set OPENAI_API_KEY to the master_key from ~/.config/litellm/config.yaml."; \
+	else echo "~/.agentmemory/.env exists — leaving as-is"; fi
+	@if grep -q "REPLACE_WITH_LITELLM_MASTER_KEY" $(HOME)/.agentmemory/.env 2>/dev/null; then \
+		echo "WARN: ~/.agentmemory/.env still has placeholder OPENAI_API_KEY — set it before daemon will compress observations"; \
+	fi
 	@mkdir -p $(HOME)/Library/LaunchAgents
 	@cp $(CURDIR)/agentmemory/ai.agentmemory.plist $(HOME)/Library/LaunchAgents/ai.agentmemory.plist
 	@launchctl bootout gui/$$(id -u)/ai.agentmemory 2>/dev/null || true
@@ -74,7 +81,18 @@ litellm:
 	@cp $(CURDIR)/litellm/ai.litellm.plist $(HOME)/Library/LaunchAgents/ai.litellm.plist
 	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
 	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
-	@sleep 12; curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1 && echo "litellm healthy: http://localhost:4000" || echo "litellm not responding yet (check ~/.config/litellm/litellm.log)"
+	@if grep -q "REPLACE_WITH_RANDOM" $(HOME)/.config/litellm/config.yaml 2>/dev/null; then \
+		echo "WARN: ~/.config/litellm/config.yaml still has placeholder master_key — edit it before litellm will accept calls"; \
+	fi
+	@if [ ! -f $(HOME)/.config/litellm/vertex-sa.json ]; then \
+		echo "WARN: ~/.config/litellm/vertex-sa.json missing — Vertex calls will 401 (place GCP service-account JSON there, chmod 600)"; \
+	fi
+	@sleep 12; if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
+		echo "litellm healthy: http://localhost:4000"; \
+	else \
+		echo "litellm not responding — last log lines:"; \
+		tail -20 $(HOME)/.config/litellm/litellm.log 2>/dev/null || echo "(no log at ~/.config/litellm/litellm.log)"; \
+	fi
 
 tmux-plugins:
 	@TPM_DIR="$(HOME)/.tmux/plugins/tpm"; \
@@ -84,11 +102,17 @@ tmux-plugins:
 	else \
 		echo "tpm already cloned"; \
 	fi
-	@if command -v tmux >/dev/null 2>&1 && tmux list-sessions >/dev/null 2>&1; then \
-		echo "Installing tmux plugins (via tpm)..."; \
-		$(HOME)/.tmux/plugins/tpm/bin/install_plugins; \
+	@if ! command -v tmux >/dev/null 2>&1; then \
+		echo "tmux not installed — skipping plugin install (run 'brew bundle --global' first)"; \
+	elif [ ! -f $(HOME)/.tmux.conf ]; then \
+		echo "~/.tmux.conf missing — run 'make stow' first, then re-run 'make tmux-plugins'"; \
+		exit 1; \
 	else \
-		echo "tmux not running — plugins will install on next tmux start (prefix+I)"; \
+		echo "Installing tmux plugins (via tpm)..."; \
+		tmux start-server; \
+		tmux source-file $(HOME)/.tmux.conf 2>/dev/null || true; \
+		export TMUX_PLUGIN_MANAGER_PATH="$(HOME)/.tmux/plugins/"; \
+		$(HOME)/.tmux/plugins/tpm/bin/install_plugins; \
 	fi
 
 verify-symlinks:
