@@ -1,0 +1,24 @@
+# Runtime state — never commit
+.last-cleanup
+.caveman-active
+history.jsonl
+mcp-needs-auth-cache.json
+
+# Session & conversation data
+sessions/
+session-env/
+projects/
+context-mode/sessions/
+context-mode/sessions.db*
+shell-snapshots/
+file-history/
+paste-cache/
+
+# Backups & cache
+backups/
+cache/
+downloads/
+
+# Plugin runtime cache (not marketplace definitions)
+plugins/cache/
+plugins/data/

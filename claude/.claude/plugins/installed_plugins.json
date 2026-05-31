@@ -1,6 +1,7 @@
 {
   "version": 2,
   "plugins": {
+<<<<<<< Updated upstream
     "clangd-lsp@claude-plugins-official": [
       {
         "scope": "user",
@@ -41,11 +42,14 @@
         "gitCommitSha": "824f0427bf67a5c121fb1bec00696ca9ab9058a6"
       }
     ],
+=======
+>>>>>>> Stashed changes
     "agentmemory@agentmemory": [
       {
         "scope": "user",
         "installPath": "/Users/hugopuybareau/.claude/plugins/cache/agentmemory/agentmemory/0.9.24",
         "version": "0.9.24",
+<<<<<<< Updated upstream
         "installedAt": "2026-05-30T14:04:37.576Z",
         "lastUpdated": "2026-05-30T14:04:37.576Z",
         "gitCommitSha": "fd9e3bd42d6208a33f0ee9de1442fdbb60eab106"
@@ -69,6 +73,12 @@
         "installedAt": "2026-05-30T14:38:29.523Z",
         "lastUpdated": "2026-05-30T14:38:29.523Z"
       }
+=======
+        "installedAt": "2026-05-30T23:54:51.414Z",
+        "lastUpdated": "2026-05-30T23:54:51.414Z",
+        "gitCommitSha": "fd9e3bd42d6208a33f0ee9de1442fdbb60eab106"
+      }
+>>>>>>> Stashed changes
     ]
   }
 }
