@@ -69,9 +69,10 @@ B) Plan directory and task workflow (after signoff)
    - Before any implementation begins, present the user with a high-level overview of all planned tasks (titles and brief descriptions).
    - Do NOT write any Task Brief files or call @developer until the user explicitly approves the plan via the question tool.
 3) Work in tasks:
-   - Only give @developer what they need for the current task.
-   - One task at a time. Write the Task Brief, then delegate to @developer.
-   - It's OK to bundle closely related changes into one task if it reduces overhead; don't bundle unrelated work.
+   - Default to FEWER, BIGGER tasks. A task is a coherent slice of work, not a single edit. Bundle related changes — same feature, same files, same subsystem — into ONE task so the developer + reviewer loop runs once, not many times.
+   - Only split into a separate task when: the work is genuinely unrelated, OR a single task's diff would grow too large for one reviewer to hold (rough ceiling ~400-500 changed lines / many files), OR a later task hard-depends on an earlier one being committed first.
+   - Each extra task costs a full Brief + developer + reviewer + commit cycle. Justify every split by that overhead; when in doubt, bundle.
+   - Write the Task Brief, then delegate to @developer. Give @developer only what the current (bundled) task needs.
 
 C) Task Brief files (the only artifact @developer relies on)
 For each task, write a Task Brief to a file in the plan directory:
