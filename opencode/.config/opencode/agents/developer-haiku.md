@@ -7,6 +7,9 @@ tools:
   write: true
   edit: true
   bash: true
+  # Gate agentmemory: this agent references zero memory tools. Drops ~7-9k of
+  # unused tool schema from its first-request context. Zero quality loss.
+  "agentmemory*": false
 ---
 You are @developer, a senior software engineer implementing tasks defined by @architect.
 

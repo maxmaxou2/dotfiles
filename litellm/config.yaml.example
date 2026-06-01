@@ -39,3 +39,6 @@ litellm_settings:
   drop_params: true                          # tolerate OpenAI params Vertex doesn't accept
 general_settings:
   master_key: sk-litellm-REPLACE_WITH_RANDOM # = agentmemory OPENAI_API_KEY (loopback-only)
+  # Spend/cost tracking — requires a postgres DB (see SETUP.md). Omit this line
+  # to run stateless (no spend history, no /ui dashboard).
+  database_url: postgresql://maxence@localhost:5432/litellm

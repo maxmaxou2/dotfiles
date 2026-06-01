@@ -7,6 +7,13 @@ tools:
   write: false
   edit: false
   bash: true
+  # Gate code-review-graph (~12-16k, zero refs — this agent does sandbox DB
+  # forensics, not graph nav) and agentmemory (allow back only the reads it
+  # uses). Big first-request savings, zero quality loss.
+  "code-review-graph*": false
+  "agentmemory*": false
+  agentmemory_memory_smart_search: true
+  agentmemory_memory_recall: true
 ---
 
 You are agent-auditor: a CHEAP, MECHANICAL forensic probe for one target opencode agent.

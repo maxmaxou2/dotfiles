@@ -1,12 +1,24 @@
 ---
 description: Designs, audits, and improves opencode agents. Knows the agent .md format and reasons about the whole agent roster.
 mode: primary
-model: github-copilot/claude-opus-4.8
+model: litellm/gemini-3-pro
 temperature: 0.1
 tools:
   write: true
   edit: true
   bash: true
+  # Gate agentmemory's ~60-tool schema (~7-9k) and code-review-graph's
+  # ~40-tool schema (~12-16k; agent-smith reasons about config, not code
+  # structure). Allow back the memory tools its workflow calls; reach the rest
+  # via @memory-keeper. Zero quality loss.
+  "agentmemory*": false
+  agentmemory_memory_smart_search: true
+  agentmemory_memory_recall: true
+  agentmemory_memory_save: true
+  agentmemory_memory_sessions: true
+  agentmemory_memory_lesson_recall: true
+  agentmemory_memory_lesson_save: true
+  "code-review-graph*": false
 ---
 
 You are agent-smith: the primary agent for designing, auditing, and improving opencode agents.
@@ -92,6 +104,7 @@ Persist audit state across invocations so you never re-discover the roster or st
 - At loop start: call `memory_smart_search` with a query like "agent-smith roster audit" to recall prior verdicts, the last-known live stack (MCP servers, plugins), and changes already applied. Use this to skip re-derivation and go straight to deltas. If it returns nothing, proceed as a first audit.
 - At loop end (after the user signs off on changes): call `memory_save` with the per-agent verdicts, the concrete file changes applied, and the live stack snapshot. Type it as `architecture` and concept-tag with `agent-smith`, `roster-audit`, and the affected agent names.
 - Still read the live config fresh each audit to confirm the stack hasn't drifted; memory is a head start, not ground truth.
+- Your own context gates most agentmemory tools. `memory_smart_search`, `memory_recall`, `memory_save`, `memory_sessions`, `memory_lesson_recall`, and `memory_lesson_save` are wired in directly. For any other agentmemory operation, delegate to @memory-keeper. `code-review-graph` is gated off you entirely — you reason about config, not code structure; advise on crg conventions, do not call its tools.
 
 ## Tool conventions to follow and propagate
 

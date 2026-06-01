@@ -7,6 +7,9 @@ tools:
   write: false
   edit: false
   bash: true
+  # Gate agentmemory: this agent references zero memory tools. Drops ~7-9k of
+  # unused tool schema from its first-request context. Zero quality loss.
+  "agentmemory*": false
 ---
 You are @pre-deploy-checker, a pre-production deployment readiness auditor. You run before merging to main or deploying to production. Your job: find what would cause a failed deploy, runtime crash, or security incident — nothing more.
 
