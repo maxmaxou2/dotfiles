@@ -87,6 +87,9 @@ litellm:
 	@if [ ! -f $(HOME)/.config/litellm/vertex-sa.json ]; then \
 		echo "WARN: ~/.config/litellm/vertex-sa.json missing — Vertex calls will 401 (place GCP service-account JSON there, chmod 600)"; \
 	fi
+	@if ! grep -q "LITELLM_MASTER_KEY" $(HOME)/.zshrc_private 2>/dev/null; then \
+		echo "ACTION REQUIRED: export LITELLM_MASTER_KEY=<master_key> in ~/.zshrc_private — opencode litellm provider (architect-gemini) sends empty bearer without it (401)"; \
+	fi
 	@sleep 12; if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
 		echo "litellm healthy: http://localhost:4000"; \
 	else \

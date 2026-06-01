@@ -19,6 +19,13 @@ model_list:
       vertex_location: europe-west4          # region (SA auth supports regional endpoints)
       vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
       reasoning_effort: disable              # no thinking — compression doesn't need it (saves tokens/latency)
+  # LLM — architect-gemini (Gemini 3 Pro Preview, global endpoint)
+  - model_name: gemini-3-pro
+    litellm_params:
+      model: vertex_ai/gemini-3.1-pro-preview
+      vertex_project: jayn-dev
+      vertex_location: global                # preview model: global endpoint
+      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
   # Embeddings — gemini-embedding-2 (GA, top MTEB). NOTE: global endpoint only,
   # 404s on regional like europe-west4. 768-dim (MRL truncation, no quality loss).
   - model_name: vertex-embed

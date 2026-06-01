@@ -102,6 +102,12 @@ agentmemory ──OpenAI API──▶ LiteLLM (localhost:4000) ──SA auth─�
      MAX_TOKENS=1024
      ```
   4. Restart: `launchctl kickstart -k gui/$(id -u)/ai.agentmemory`.
+  5. For the opencode→LiteLLM provider (the `architect-gemini` agent), export the same `master_key` in `~/.zshrc_private` (gitignored, sourced by `zsh/.zshrc`):
+     ```
+     export LITELLM_MASTER_KEY=<the litellm master_key>
+     ```
+     opencode resolves `{env:LITELLM_MASTER_KEY}` at launch; without it the provider sends an empty bearer and Vertex calls 401. `make litellm` warns if it's unset.
+- **opencode provider**: `opencode/.config/opencode/opencode.json` declares a `litellm` provider (`@ai-sdk/openai-compatible` → `localhost:4000/v1`) so any opencode agent can target a LiteLLM model via `litellm/<model_name>`. The `architect-gemini` agent (`agents/architect-gemini.md`) uses `litellm/gemini-3-pro` → Vertex `gemini-3.1-pro-preview` (global endpoint). Add a model = one `model_list` entry in `config.yaml` + one line under the provider's `models`.
 - **Why these choices**: `reasoning_effort: disable` (Gemini 2.5 thinking wastes output tokens on compression); both LLM (`gemini-2.5-flash`) and embeddings (`gemini-embedding-2`, top MTEB, 768-dim) run on Vertex credits.
 - **Embedding-2 quirk**: it's **global-endpoint only** (`vertex_location: global`) — 404s on a regional location like `europe-west4`.
 - **Switching embedding provider/dims after data exists** crashes the worker (`persisted vector index has wrong dimension`). Recovery: add `AGENTMEMORY_DROP_STALE_INDEX=true` to `~/.agentmemory/.env`, restart, then remove the line (rebuilds from live observations).
