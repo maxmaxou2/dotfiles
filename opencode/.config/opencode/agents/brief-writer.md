@@ -1,7 +1,7 @@
 ---
 description: Generates detailed Task Brief files from high-level plans using the codebase.
 mode: subagent
-model: opencode/deepseek-v4-flash-free
+model: opencode-go/deepseek-v4-flash
 temperature: 0.1
 tools:
   write: true
