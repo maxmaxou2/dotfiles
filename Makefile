@@ -1,8 +1,8 @@
-.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory litellm tmux-plugins verify-symlinks
+.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory litellm restart-litellm tmux-plugins verify-symlinks
 
 STAY_ALERT_REPO ?= git@github.com:maxmaxou2/stay-alert.git
 STAY_ALERT_DIR  ?= $(HOME)/src/stay-alert
-STOW_PACKAGES   ?= clang-format claude conda hammerspoon karabiner nvim opencode pdb rich ssh tmux tmuxp zsh
+STOW_PACKAGES   ?= clang-format claude conda hammerspoon karabiner litellm nvim opencode pdb rich ssh tmux tmuxp zsh
 
 help:
 	@echo "Targets:"
@@ -68,22 +68,14 @@ litellm:
 	@command -v uv >/dev/null 2>&1 || brew install uv
 	uv tool install "litellm[proxy]" --with google-cloud-aiplatform --with google-auth --force
 	@mkdir -p $(HOME)/.config/litellm
-	@if [ ! -f $(HOME)/.config/litellm/config.yaml ]; then \
-		cp $(CURDIR)/litellm/config.yaml.example $(HOME)/.config/litellm/config.yaml; \
-		chmod 600 $(HOME)/.config/litellm/config.yaml; \
-		echo "ACTION REQUIRED: edit ~/.config/litellm/config.yaml — set master_key + vertex_credentials path,"; \
-		echo "                 place the Vertex service-account JSON at ~/.config/litellm/vertex-sa.json (chmod 600),"; \
-		echo "                 then set agentmemory ~/.agentmemory/.env: OPENAI_API_KEY=<that master_key>,"; \
-		echo "                 OPENAI_BASE_URL=http://localhost:4000, OPENAI_MODEL=gemini-flash,"; \
-		echo "                 EMBEDDING_PROVIDER=local, AGENTMEMORY_AUTO_COMPRESS=true, MAX_TOKENS=1024."; \
-	else echo "~/.config/litellm/config.yaml exists — leaving as-is"; fi
-	@mkdir -p $(HOME)/Library/LaunchAgents
+	@if [ ! -f $(HOME)/.config/litellm/.env ]; then \
+		cp $(CURDIR)/litellm/.config/litellm/.env.example $(HOME)/.config/litellm/.env; \
+		chmod 600 $(HOME)/.config/litellm/.env; \
+		echo "ACTION REQUIRED: edit ~/.config/litellm/.env with your actual secrets."; \
+	else echo "~/.config/litellm/.env exists — leaving as-is"; fi
 	@cp $(CURDIR)/litellm/ai.litellm.plist $(HOME)/Library/LaunchAgents/ai.litellm.plist
 	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
 	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
-	@if grep -q "REPLACE_WITH_RANDOM" $(HOME)/.config/litellm/config.yaml 2>/dev/null; then \
-		echo "WARN: ~/.config/litellm/config.yaml still has placeholder master_key — edit it before litellm will accept calls"; \
-	fi
 	@if [ ! -f $(HOME)/.config/litellm/vertex-sa.json ]; then \
 		echo "WARN: ~/.config/litellm/vertex-sa.json missing — Vertex calls will 401 (place GCP service-account JSON there, chmod 600)"; \
 	fi
@@ -91,6 +83,20 @@ litellm:
 		echo "ACTION REQUIRED: export LITELLM_MASTER_KEY=<master_key> in ~/.zshrc_private — opencode litellm provider (architect-gemini) sends empty bearer without it (401)"; \
 	fi
 	@sleep 12; if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
+		echo "litellm healthy: http://localhost:4000"; \
+	else \
+		echo "litellm not responding — last log lines:"; \
+		tail -20 $(HOME)/.config/litellm/litellm.log 2>/dev/null || echo "(no log at ~/.config/litellm/litellm.log)"; \
+	fi
+
+restart-litellm:
+	@echo "Killing ai.litellm..."
+	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
+	@sleep 1
+	@echo "Starting ai.litellm..."
+	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
+	@sleep 12
+	@if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
 		echo "litellm healthy: http://localhost:4000"; \
 	else \
 		echo "litellm not responding — last log lines:"; \

@@ -1,7 +1,7 @@
 ---
 description: Default fast code reviewer. First-pass review of @developer changes on every task; escalates high-risk/architectural calls to @code-reviewer-sonnet.
 mode: subagent
-model: github-copilot/claude-haiku-4.5
+model: litellm/copilot-haiku
 temperature: 0.1
 tools:
   write: false

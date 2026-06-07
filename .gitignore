@@ -26,3 +26,7 @@ litellm/config.yaml          # real litellm config holds master_key (use config.
 agentmemory/.env             # real agentmemory env holds litellm key (use .env.example)
 **/*-sa.json                 # GCP service-account keys
 **/vertex-sa.json
+**/github_copilot/           # Copilot device-flow creds (access-token + api-key.json)
+litellm/.config/litellm/.env # real litellm env: master_key, copilot token, db url (use .env.example)
+
+misc/

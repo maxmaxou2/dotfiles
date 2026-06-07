@@ -1,7 +1,7 @@
 ---
 description: Pre-production deploy readiness checker. Validates env vars, Dockerfiles, migrations, secrets, and config before merge/deploy.
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: litellm/copilot-sonnet
 temperature: 0.1
 tools:
   write: false

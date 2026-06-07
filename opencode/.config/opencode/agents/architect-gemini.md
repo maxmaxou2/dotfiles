@@ -58,7 +58,7 @@ C) Brief & Implement
 1. Spawn @brief-writer via `task` tool. Give objective. It locates files, writes `00x-task-title.md`.
 2. Review @brief-writer output. Wrong -> instruct fix.
 3. Correct -> delegate @developer-deepseek reference Brief.
-4. @developer implements -> request review @code-reviewer-sonnet.
+4. @developer-deepseek implements -> request review @code-reviewer-sonnet.
 5. Review flag issue -> write corrective Brief, send @developer back.
 6. Task done/approve -> git commit task progress. Next task.
 

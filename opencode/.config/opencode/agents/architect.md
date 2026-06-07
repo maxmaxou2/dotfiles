@@ -1,7 +1,7 @@
 ---
 description: Architects whole implementations.
 mode: primary
-model: github-copilot/claude-opus-4.8
+model: litellm/copilot-opus
 temperature: 0.1
 tools:
   write: false

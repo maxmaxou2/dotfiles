@@ -1,7 +1,7 @@
 ---
 description: Cheap forensic subagent. Mines opencode's session DB for tool-call loops, errors, and token waste in other agents, and returns a tiny distilled defect report. Invoked by agent-smith.
 mode: subagent
-model: github-copilot/claude-haiku-4.5
+model: litellm/copilot-haiku
 temperature: 0.1
 tools:
   write: false

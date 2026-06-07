@@ -1,7 +1,7 @@
 ---
 description: Memory-operations proxy. Primaries @-mention it to run agentmemory ops beyond their whitelist. Returns distilled results.
 mode: subagent
-model: github-copilot/claude-haiku-4.5
+model: litellm/copilot-haiku
 temperature: 0.1
 tools:
   write: false

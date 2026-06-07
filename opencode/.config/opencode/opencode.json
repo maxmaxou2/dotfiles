@@ -11,13 +11,17 @@
   "provider": {
     "litellm": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "LiteLLM (Vertex)",
+      "name": "LiteLLM (Proxy)",
       "options": {
         "baseURL": "http://localhost:4000/v1",
         "apiKey": "{env:LITELLM_MASTER_KEY}"
       },
       "models": {
-        "gemini-3-pro": { "name": "Gemini 3 Pro Preview" }
+        "gemini-3-pro": { "name": "Gemini 3 Pro Preview" },
+        "copilot-sonnet": { "name": "Copilot Claude Sonnet 4.6" },
+        "copilot-opus": { "name": "Copilot Claude Opus 4.8" },
+        "copilot-haiku": { "name": "Copilot Claude Haiku 4.5" },
+        "deepseek-v4-flash": { "name": "Opencode Go (DeepSeek V4 Flash)" }
       }
     }
   },

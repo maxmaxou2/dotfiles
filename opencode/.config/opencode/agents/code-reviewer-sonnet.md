@@ -1,7 +1,7 @@
 ---
 description: Escalation/deep code reviewer. Second, deeper pass for high-risk, architectural, or large diffs that @code-reviewer-haiku flags or @architect routes here.
 mode: subagent
-model: github-copilot/claude-sonnet-4.6
+model: litellm/copilot-sonnet
 temperature: 0.1
 tools:
   write: false

@@ -7,11 +7,9 @@
 
   <key>ProgramArguments</key>
   <array>
-    <string>/Users/maxence/.local/bin/litellm</string>
-    <string>--config</string>
-    <string>/Users/maxence/.config/litellm/config.yaml</string>
-    <string>--port</string>
-    <string>4000</string>
+    <string>/bin/zsh</string>
+    <string>-c</string>
+    <string>set -a; . /Users/maxence/.config/litellm/.env; exec /Users/maxence/.local/bin/litellm --config /Users/maxence/.config/litellm/config.yaml --port 4000</string>
   </array>
 
   <key>EnvironmentVariables</key>

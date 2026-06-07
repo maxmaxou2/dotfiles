@@ -1,7 +1,7 @@
 ---
 description: Escalation/deep code reviewer. Deepest pass for extreme-risk, architectural, or large diffs that @code-reviewer-sonnet flags or @architect routes here.
 mode: subagent
-model: github-copilot/claude-opus-4.8
+model: litellm/copilot-opus
 temperature: 0.1
 tools:
   write: false

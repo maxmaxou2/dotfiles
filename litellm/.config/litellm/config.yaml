@@ -1,0 +1,52 @@
+model_list:
+  # ── Vertex AI (existing) ──────────────────────────────────────────
+  - model_name: gemini-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: jayn-dev
+      vertex_location: europe-west4
+      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      reasoning_effort: disable
+  - model_name: gemini-3-pro
+    litellm_params:
+      model: vertex_ai/gemini-3.1-pro-preview
+      vertex_project: jayn-dev
+      vertex_location: global
+      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+  - model_name: vertex-embed
+    litellm_params:
+      model: vertex_ai/gemini-embedding-2
+      vertex_project: jayn-dev
+      vertex_location: global
+      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      dimensions: 768
+
+  # ── GitHub Copilot ──────────────────────────────────────────────
+  # Token sourced from ~/.config/github-copilot/apps.json (ghu_...).
+  # Older installs use hosts.json; LiteLLM checks both.
+  - model_name: copilot-sonnet
+    litellm_params:
+      model: github_copilot/claude-sonnet-4.6
+      api_key: "os.environ/GITHUB_TOKEN"
+  - model_name: copilot-opus
+    litellm_params:
+      model: github_copilot/claude-opus-4.8
+      api_key: "os.environ/GITHUB_TOKEN"
+  - model_name: copilot-haiku
+    litellm_params:
+      model: github_copilot/claude-haiku-4.5
+      api_key: "os.environ/GITHUB_TOKEN"
+
+  # ── Opencode Go (openai-compatible) ────────────────────────────
+  # Requires OPENCODE_API_KEY in the environment.
+  - model_name: deepseek-v4-flash
+    litellm_params:
+      model: openai/deepseek-v4-flash
+      api_base: https://opencode.ai/zen/go/v1
+      api_key: "os.environ/OPENCODE_API_KEY"
+
+litellm_settings:
+  drop_params: true
+general_settings:
+  master_key: "os.environ/LITELLM_MASTER_KEY"
+  database_url: postgresql://maxence@localhost:5432/litellm
