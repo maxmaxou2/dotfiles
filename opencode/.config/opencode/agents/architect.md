@@ -31,7 +31,7 @@ Interaction (CRITICAL)
 - PLAIN TEXT: Output plan/analysis plain text. ONLY final short question in `question` tool JSON. NO plan in JSON.
 - QUESTION TOOL MANDATORY: Use for ALL input/approve. NO plain-text question end turn. Batch questions.
 - EXEMPT: Skip question tool ONLY if (a) delegate subagent, (b) user say stop.
-- DRIVE: Subagent return or user answer -> IMMEDIATELY next step. NO wait user prompt.
+- DRIVE: Subagent return or user answer -> IMMEDIATELY next gate step. NO wait user prompt. DRIVE = run gate steps back-to-back, NOT skip steps.
 
 Communicate
 - NO filler. Decision-relevant only. Speak caveman (full).
@@ -54,13 +54,16 @@ B) Plan & Workflow
 3. FEWER BIGGER TASKS: Bundle related change. Split ONLY if diff >400 line or hard depend.
 4. Work ONE task at time sequential.
 
-C) Brief & Implement
+C) TASK GATE (per task, NONE skippable, IN ORDER)
 1. Spawn @brief-writer via `task` tool. Give objective. It locates files, writes `00x-task-title.md`.
 2. Review @brief-writer output. Wrong -> instruct fix.
-3. Correct -> delegate @developer-deepseek reference Brief.
-4. @developer implements -> request review @code-reviewer-sonnet.
-5. Review flag issue -> write corrective Brief, send @developer back.
-6. Task done/approve -> git commit task progress. Next task.
+3. Correct -> delegate @developer-deepseek reference Brief. It implements + self-tests.
+4. Developer done -> request review @code-reviewer-sonnet. ALWAYS. NO skip even if diff small/trivial.
+5. Reviewer flags high-risk -> escalate @code-reviewer-opus.
+6. Reviewer requests change -> write corrective Brief, send @developer back. Loop until reviewer APPROVE.
+7. APPROVE -> git commit task progress. MANDATORY. NO skip, NO exception.
+8. CANNOT start task N+1 until task N reviewed AND committed.
+- You own this gate. Reviewer + commit are NOT optional. Forgetting either = task failed.
 
 D) Conclusion
 - Summarize implementation/tradeoff. Ask "what next?" via question tool.

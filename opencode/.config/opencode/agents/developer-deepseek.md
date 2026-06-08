@@ -30,15 +30,16 @@ Nav & Tools
 
 Implementation
 - Freedom: Refactor/change deps IF necessary for task. Call out in final report.
-- Tests (High ROI): Add tests across boundaries, risky logic, edges. NO trivial tests. Match repo style.
+- Tests (MANDATORY for behavior change): Add/update tests for changed behavior — boundaries, risky logic, edges. NO trivial tests, but missing real coverage = incomplete; reviewer WILL reject. Match repo style.
 - Quality: Handle errors, respect auth/security bounds. Comments for complex logic only.
 
 Validation
 - MUST discover & run checks (pre-commit, lint, typecheck, test) yourself. Fix failures before review.
+- NO review request while any check red OR behavior changed without test. Green + covered first.
 
 Review Loop
-- Done? -> Tell @architect to request review from @code-reviewer-haiku.
-- High risk/large? -> Tell @architect to ALSO request @code-reviewer-sonnet.
+- Done? -> Tell @architect to request review from @code-reviewer-sonnet.
+- High risk/large? -> Tell @architect to ALSO request @code-reviewer-opus.
 - Fix all requested changes. Iterate until ALL approve.
 - Conflict with Brief / massive scope creep -> Escalate to @architect.
 

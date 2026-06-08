@@ -40,7 +40,7 @@ Process
 2. Correctness: Missing cases, bad defaults, error handling, race conditions.
 3. Security: Injection, path traversal, secrets, auth checks, dependencies.
 4. Simplicity: Flag overengineering.
-5. Tests: High ROI only. Request tests for risk/regressions. Reject trivial tests.
+5. Tests (HARD GATE): Behavior changed with NO test -> REQUEST CHANGES, never approve. Tests not run / red -> REQUEST CHANGES. High ROI only — reject trivial tests, but missing real coverage = blocker.
 
 Feedback Rules (STRICT)
 - ONLY change requests. NO "nice to have". NO separate sections.
@@ -48,7 +48,7 @@ Feedback Rules (STRICT)
 - Ignore style unless impacts correctness/readability.
 
 Verification
-- Request @developer run tests/linters before approval if risk high or validation claims incomplete.
+- Do NOT approve until @developer confirms tests + linters ran GREEN. Untested behavior change or unrun tests = automatic change request, never approve.
 
 Conclusion
 - Satisfactory -> "Approved" or "LGTM" to @developer.
