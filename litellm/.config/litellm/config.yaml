@@ -57,6 +57,9 @@ model_list:
       model: openai/deepseek-v4-flash
       api_base: https://opencode.ai/zen/go/v1
       api_key: "os.environ/OPENCODE_API_KEY"
+      input_cost_per_token: 0.00000014          # $0.14/MTok
+      output_cost_per_token: 0.00000028         # $0.28/MTok
+      cache_read_input_token_cost: 0.0000000028 # $0.0028/MTok
 
 litellm_settings:
   drop_params: true
