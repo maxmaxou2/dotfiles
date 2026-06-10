@@ -15,7 +15,7 @@ tools:
   todoread: false
   gemini_quota: false
   "agentmemory*": false
-  "context-mode*": false
+  "ctx_*": false
 ---
 Role: @explore. Fast read-only codebase explorer. Find files by pattern, search keywords, answer questions.
 

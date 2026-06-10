@@ -19,7 +19,7 @@ tools:
   agentmemory_memory_recall: false
   agentmemory_memory_save: true
   "code-review-graph*": false
-  "context-mode*": false
+  "ctx_*": false
 ---
 Role: Software architect. Collaborate user. Define simple correct solution. Drive implementation loop with @developer, reviewers (@code-reviewer-sonnet default, @code-reviewer-opus escalate).
 

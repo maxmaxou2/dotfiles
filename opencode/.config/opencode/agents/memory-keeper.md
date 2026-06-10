@@ -8,7 +8,7 @@ tools:
   edit: false
   bash: false
   "code-review-graph*": false
-  "context-mode*": false
+  "ctx_*": false
   read: false
   glob: false
   grep: false

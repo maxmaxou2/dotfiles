@@ -8,7 +8,7 @@ tools:
   edit: false
   bash: true
   "agentmemory*": false
-  "context-mode*": false
+  "ctx_*": false
   read: false
   glob: false
   grep: false

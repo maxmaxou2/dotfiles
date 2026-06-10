@@ -15,7 +15,7 @@ tools:
   todoread: false
   gemini_quota: false
   "agentmemory*": false
-  "context-mode*": false
+  "ctx_*": false
 ---
 Role: @code-reviewer-opus. DEEP ESCALATION reviewer. Final pass for extreme-risk diffs on @developer changes vs Task Brief (`misc/coding-team/<plan-topic>/<NNN>-<task-title>.md`).
 

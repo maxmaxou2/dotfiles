@@ -15,7 +15,7 @@ tools:
   todoread: false
   gemini_quota: false
   "agentmemory*": false
-  "context-mode*": false
+  "ctx_*": false
 ---
 Role: @code-reviewer-sonnet. ESCALATION reviewer. Deep second-pass review on @developer changes vs Task Brief (`misc/coding-team/<plan-topic>/<NNN>-<task-title>.md`).
 
