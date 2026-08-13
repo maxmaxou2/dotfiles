@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/opt/homebrew/Cellar/node/26.0.0/bin/node\" \"/Users/maxence/.claude/hooks/caveman-activate.js\"",
+            "command": "\"/Users/maxence/.claude/hooks/caveman-arm-guard.sh\" \"/opt/homebrew/Cellar/node/26.0.0/bin/node\" \"/Users/maxence/.claude/hooks/caveman-activate.js\"",
             "timeout": 5,
             "statusMessage": "Loading caveman mode..."
           }
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"/opt/homebrew/Cellar/node/26.0.0/bin/node\" \"/Users/maxence/.claude/hooks/caveman-mode-tracker.js\"",
+            "command": "\"/Users/maxence/.claude/hooks/caveman-arm-guard.sh\" \"/opt/homebrew/Cellar/node/26.0.0/bin/node\" \"/Users/maxence/.claude/hooks/caveman-mode-tracker.js\"",
             "timeout": 5,
             "statusMessage": "Tracking caveman mode..."
           }
@@ -68,7 +68,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash \"/Users/maxence/.claude/hooks/caveman-statusline.sh\""
+    "command": "\"/Users/maxence/.claude/hooks/caveman-arm-guard.sh\" --badge bash \"/Users/maxence/.claude/hooks/caveman-statusline.sh\""
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,

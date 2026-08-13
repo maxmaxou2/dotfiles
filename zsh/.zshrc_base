@@ -260,3 +260,60 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 export OPENCODE_DISABLE_AUTOUPDATE=1
 export OPENCODE_EXPERIMENTAL_WATCHER=true
+
+# ── caveman A/B ──────────────────────────────────────────────────────────────
+# Alternate the mode per session, so the corpus keeps growing in matched pairs:
+# one session with caveman, the next without, same person, same kind of work.
+#
+# CAVEMAN_DEFAULT_MODE is priority 1 in the plugin's getDefaultMode(), ahead of
+# ~/.config/caveman/config.json. Claude Code's hooks are children of this
+# process and inherit it, so the one variable flips both the SessionStart
+# ruleset and the UserPromptSubmit per-turn reinforcement. Under off the
+# activator emits no "CAVEMAN MODE ACTIVE" marker at all — which is the signal
+# token-checker's detector keys the vanilla arm on.
+claude() {
+  emulate -L zsh
+  local state=$HOME/.claude/.caveman-ab mode=off arg resume=0
+
+  # An arm set by hand wins, and stays out of the alternation.
+  if [[ -n $CAVEMAN_DEFAULT_MODE ]]; then
+    command claude "$@"
+    return
+  fi
+
+  for arg in "$@"; do
+    case $arg in -c|--continue|-r|--resume) resume=1 ;; esac
+  done
+
+  [[ -r $state ]] && mode=$(<$state)
+
+  # --continue/--resume re-fires SessionStart on a transcript that already has
+  # an arm; flipping there would give one session both and spoil it for each.
+  if (( ! resume )); then
+    [[ $mode == full ]] && mode=off || mode=full
+    print -r -- $mode > $state
+  fi
+
+  print -u2 -- "caveman: ${(U)mode}"
+  CAVEMAN_DEFAULT_MODE=$mode command claude "$@"
+}
+
+# caveman-ab            what the next session gets
+# caveman-ab full|off   force it
+caveman-ab() {
+  emulate -L zsh
+  local state=$HOME/.claude/.caveman-ab mode=off
+  [[ -r $state ]] && mode=$(<$state)
+  if [[ -n ${1-} ]]; then
+    if [[ $1 != full && $1 != off ]]; then
+      print -u2 -- "usage: caveman-ab [full|off]"
+      return 1
+    fi
+    # The file holds the arm last used, so store the complement.
+    [[ $1 == full ]] && print -r -- off > $state || print -r -- full > $state
+  fi
+  [[ -r $state ]] && mode=$(<$state)
+  [[ $mode == full ]] && print -r -- "caveman: next session OFF" \
+                      || print -r -- "caveman: next session FULL"
+}
+
