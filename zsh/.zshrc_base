@@ -316,4 +316,3 @@ caveman-ab() {
   [[ $mode == full ]] && print -r -- "caveman: next session OFF" \
                       || print -r -- "caveman: next session FULL"
 }
-
