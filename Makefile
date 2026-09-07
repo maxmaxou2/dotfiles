@@ -11,7 +11,7 @@ help:
 	@echo "  brew             Symlink .Brewfile and run brew bundle --global"
 	@echo "  stow             Symlink dotfile packages via GNU stow (--restow for idempotency)"
 	@echo "  stay-alert       Clone (if missing) and install stay-alert (bun link + init)"
-	@echo "  context-mode     Install context-mode globally via npm (opencode plugin + claude hook)"
+	@echo "  context-mode     Install context-mode globally via npm (opencode plugin only)"
 	@echo "  agentmemory      Install agentmemory (npm), launchd autostart server, claude plugin"
 	@echo "  litellm          Install litellm proxy (uv), launchd autostart, Vertex/Gemini for agentmemory compression"
 	@echo "  tmux-plugins     Bootstrap TPM and install tmux plugins"

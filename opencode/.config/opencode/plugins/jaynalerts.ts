@@ -1,4 +1,4 @@
-import { createContext, notifyUser, resolveIcon } from "stay-alert";
+import { createContext, notifyUser, resolveIcon } from "jaynalerts";
 
 type OpencodeClient = {
 	app: {
@@ -35,14 +35,14 @@ function ctx(): Promise<Awaited<ReturnType<typeof createContext>>> {
 	return ctxPromise;
 }
 
-export const StayAlertPlugin: Plugin = async ({ client }) => {
+export const JaynAlertsPlugin: Plugin = async ({ client }) => {
 	const warn = async (message: string, error?: unknown): Promise<void> => {
-		const fullMessage = `stay-alert: ${message}${error === undefined ? "" : `: ${errorMessage(error)}`}`;
+		const fullMessage = `jaynalerts: ${message}${error === undefined ? "" : `: ${errorMessage(error)}`}`;
 
 		try {
 			await client.app.log({
 				body: {
-					service: "stay-alert",
+					service: "jaynalerts",
 					level: "warn",
 					message: fullMessage,
 				},
