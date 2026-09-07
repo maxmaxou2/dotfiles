@@ -27,26 +27,47 @@ From inside the cloned repo (`~/dotfiles`):
 make setup
 ```
 
-This runs `make xcode-clt`, `make brew`, `make stow`, and `make stay-alert` (see [Makefile](Makefile) for all targets).
+This runs `make xcode-clt`, `make brew`, `make stow`, `make jaynalerts`, `make context-mode`,
+`make agentmemory`, `make litellm`, `make tmux-plugins`, `make verify-symlinks`
+(see [Makefile](Makefile) for all targets).
+
+The repo does not have to live at `~/dotfiles` — `make stow` passes
+`--dir=$(CURDIR) --target=$(HOME)`, so any clone location works.
 
 ### HomeBrew
 ```
-ln -s ~/dotfiles/.Brewfile ~/.Brewfile
-brew bundle --global
+make brew        # symlinks .Brewfile into $HOME, then `brew bundle --global`
 ```
 
 ### Symlinks
 ```
-stow conda hammerspoon karabiner nvim pdb rich ssh tmux zsh clang-format opencode
+make stow        # stow --restow --dir=<repo> --target=$HOME <STOW_PACKAGES>
 ```
 
-### stay-alert (notifications for Claude Code & opencode)
+`STOW_PACKAGES` is defined at the top of the [Makefile](Makefile); edit it there rather
+than keeping a second list in this README.
+
+### jaynalerts (notifications for Claude Code & opencode)
 ```
-git clone git@github.com:maxmaxou2/stay-alert.git ~/src/stay-alert
-make -C ~/src/stay-alert setup
+make jaynalerts
 ```
 
-`make setup` in stay-alert does `bun link` (puts `stay-alert` on PATH) and `stay-alert init` (installs Claude Code hooks, opencode plugin, and compiles the Swift focus helper).
+Clones `git@github.com:jaynlabs/jaynalerts.git` into `~/src/jaynalerts`. It is a
+**private repo**, so this step needs an SSH key already registered with GitHub and
+access to the `jaynlabs` org — it is the one part of `make setup` that cannot run on
+a bare machine. Override the source with `make jaynalerts JAYNALERTS_REPO=...`.
+
+`make setup` in jaynalerts does `bun link` (puts `jaynalerts` on PATH) and
+`jaynalerts init --claude-code --opencode --shell-rc ~/.zshrc`, which installs the
+Claude Code hooks, the opencode plugin, compiles the Swift notifier, and writes its
+managed block into `~/.zshrc` — i.e. into `zsh/.zshrc` here, since that path is
+stowed. `make jaynalerts` depends on `stow` so the symlink exists first.
+
+Replaces the older `stay-alert`. jaynalerts notifies through its own Swift
+`UNUserNotification` helper and is focus-aware on its own (transient when the
+terminal is focused, sticky when it is not), so the Hammerspoon hook that used to
+clear `alerter` notifications on Ghostty focus — and the `alerter` dependency
+itself — are gone.
 
 ### context-mode (token-saving routing for opencode)
 ```
@@ -65,7 +86,7 @@ make verify-symlinks
 
 Persistent memory that auto-captures sessions/tools and recalls context into future sessions. A local REST server runs on `http://localhost:3111` (viewer: `http://localhost:3113`).
 
-- **Server**: `make agentmemory` installs the `@agentmemory/agentmemory` npm package and loads `agentmemory/ai.agentmemory.plist` into `~/Library/LaunchAgents` so the server autostarts at login (`KeepAlive`).
+- **Server**: `make agentmemory` installs the `@agentmemory/agentmemory` npm package and renders `agentmemory/ai.agentmemory.plist.in` into `~/Library/LaunchAgents/ai.agentmemory.plist` so the server autostarts at login (`KeepAlive`). launchd plists take no variable expansion, so the template's `@HOME@` / `@PATH@` / `@AGENTMEMORY_BIN@` are substituted at install time — nothing user-specific is committed.
 - **Provider keys**: on a fresh machine `agentmemory init` seeds `~/.agentmemory/.env`. Fill in the LLM + embeddings keys there — this file holds secrets and is **not** committed. Verify with `agentmemory status` (Provider/Embeddings should be ✓).
 - **Claude Code**: marketplace `rohitg00/agentmemory` is declared under `extraKnownMarketplaces` and enabled via `enabledPlugins["agentmemory@agentmemory"]` in `claude/.claude/settings.json`. The plugin registers 12 hooks, 8 skills, and auto-wires the `@agentmemory/mcp` server via its own `.mcp.json` — **no manual `mcpServers` entry needed**. `make agentmemory` runs `claude plugin marketplace add rohitg00/agentmemory && claude plugin install agentmemory@agentmemory`; if the CLI step fails, run `/plugin install agentmemory` inside Claude Code.
 - **opencode**: wired declaratively in `opencode/.config/opencode/opencode.json` — manual `mcp.agentmemory` entry (opencode does NOT auto-wire MCP) plus `plugin: ["./plugins/agentmemory-capture.ts"]`. The plugin (`plugins/agentmemory-capture.ts`, 22 auto-capture hooks) and `/recall`+`/remember` commands (`commands/`) are stowed by the `opencode` package via `make stow`.
@@ -84,11 +105,11 @@ agentmemory's `AGENTMEMORY_AUTO_COMPRESS` runs an LLM on observations for richer
 agentmemory ──OpenAI API──▶ LiteLLM (localhost:4000) ──SA auth──▶ Vertex AI / Gemini 2.5 Flash
 ```
 
-- **Install/run**: `make litellm` installs the proxy via `uv` (with `google-cloud-aiplatform` + `google-auth`) and loads `litellm/ai.litellm.plist` into `~/Library/LaunchAgents` (autostart, `KeepAlive`).
-- **Config**: committed template `litellm/config.yaml.example` → copy to `~/.config/litellm/config.yaml`. The real config holds the `master_key` and is **gitignored** (so is `*-sa.json`).
+- **Install/run**: `make litellm` installs the proxy via `uv` (with `google-cloud-aiplatform` + `google-auth`) and renders `litellm/ai.litellm.plist.in` into `~/Library/LaunchAgents/ai.litellm.plist` (autostart, `KeepAlive`).
+- **Config**: `litellm/.config/litellm/config.yaml` **is committed** and stowed to `~/.config/litellm/config.yaml`. It holds no secrets and no absolute paths — every machine-specific value (`master_key`, `vertex_project`, `vertex_credentials`, `database_url`) is an `os.environ/X` lookup the proxy resolves at startup from `~/.config/litellm/.env`, which the launchd job sources before exec. That `.env` is rendered from `litellm/.config/litellm/.env.example` on `make litellm` and is **gitignored** (so is `*-sa.json`).
 - **Secrets (manual on a fresh machine, never committed):**
   1. Place the Vertex service-account JSON at `~/.config/litellm/vertex-sa.json` (`chmod 600`).
-  2. Set `master_key` + `vertex_credentials` path in `~/.config/litellm/config.yaml`.
+  2. Fill `LITELLM_MASTER_KEY`, `GITHUB_TOKEN`, `OPENCODE_API_KEY` and `VERTEX_PROJECT` in `~/.config/litellm/.env`. `make litellm` warns for each one left empty.
   3. Point agentmemory at it in `~/.agentmemory/.env`:
      ```
      OPENAI_API_KEY=<the litellm master_key>
@@ -111,7 +132,17 @@ agentmemory ──OpenAI API──▶ LiteLLM (localhost:4000) ──SA auth─�
 - **Embedding-2 quirk**: it's **global-endpoint only** (`vertex_location: global`) — 404s on a regional location like `europe-west4`.
 - **Switching embedding provider/dims after data exists** crashes the worker (`persisted vector index has wrong dimension`). Recovery: add `AGENTMEMORY_DROP_STALE_INDEX=true` to `~/.agentmemory/.env`, restart, then remove the line (rebuilds from live observations).
 - **Verify**: `curl http://localhost:4000/health/liveliness` → 200; live test:
-  `KEY=$(grep master_key ~/.config/litellm/config.yaml | sed -E 's/.*: *//'); curl -s localhost:4000/v1/chat/completions -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' -d '{"model":"gemini-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":50}'`
+  `KEY=$(grep '^LITELLM_MASTER_KEY=' ~/.config/litellm/.env | cut -d= -f2-); curl -s localhost:4000/v1/chat/completions -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' -d '{"model":"gemini-flash","messages":[{"role":"user","content":"ping"}],"max_tokens":50}'`
+
+### Machine-local settings (not in this repo)
+
+Two files hold per-machine state and are deliberately **not** committed:
+
+- `~/.zshrc_private` — secrets, work aliases, tokens. Sourced by `zsh/.zshrc` if present.
+- `~/.claude/settings.local.json` — Claude Code user settings that are machine- or
+  employer-specific, notably the `autoMode` block (trusted repo, org, prod-command
+  deny list). It is a real file, not stowed, and is globally gitignored. The committed
+  `claude/.claude/settings.json` holds only portable settings.
 
 ### Additional steps
 

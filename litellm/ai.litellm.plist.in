@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Template, not a usable plist. `make litellm` substitutes this machine's paths
+  and writes the result to ~/Library/LaunchAgents/ai.litellm.plist.
+  launchd does no variable expansion, so absolute paths have to be baked in at
+  install time instead of committed.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ai.litellm</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-c</string>
+    <string>set -a; . @HOME@/.config/litellm/.env; exec @LITELLM_BIN@ --config @HOME@/.config/litellm/config.yaml --port 4000</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>@PATH@</string>
+    <key>HOME</key>
+    <string>@HOME@</string>
+  </dict>
+
+  <key>WorkingDirectory</key>
+  <string>@HOME@/.config/litellm</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>@HOME@/.config/litellm/litellm.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>@HOME@/.config/litellm/litellm.log</string>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

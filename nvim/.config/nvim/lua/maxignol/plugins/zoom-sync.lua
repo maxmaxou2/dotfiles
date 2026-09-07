@@ -1,7 +1,8 @@
 return {
-	-- "maxmaxou2/zoom-sync.nvim",
-    dir = "~/src/zoom-sync.nvim",
-    name = "zoom-sync",
+	"maxmaxou2/zoom-sync.nvim",
+	name = "zoom-sync",
+	-- For local development, clone the repo and swap the line above for:
+	--   dir = "~/src/zoom-sync.nvim",
 	dependencies = {
 		"anuvyklack/windows.nvim",
 		"anuvyklack/middleclass", -- required by windows.nvim

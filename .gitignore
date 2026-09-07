@@ -21,12 +21,22 @@ bin/
 # --- Architect planning ephemera ---
 opencode/.config/opencode/misc/coding-team/
 
+# --- Editor / tooling state ---
+.ropeproject/
+# bun/npm link artifacts, recreated by `make jaynalerts`
+node_modules/
+
 # --- Secrets (never commit) ---
-litellm/config.yaml          # real litellm config holds master_key (use config.yaml.example)
-agentmemory/.env             # real agentmemory env holds litellm key (use .env.example)
-**/*-sa.json                 # GCP service-account keys
+# NOTE: git has no trailing-comment syntax — "pattern  # why" is one literal
+# pattern and silently matches nothing. Keep every comment on its own line.
+# config.yaml IS committed: every machine-specific or secret value in it is an
+# `os.environ/X` lookup resolved from ~/.config/litellm/.env at proxy startup.
+# Only *.env.example templates are committed.
+**/.env
+# GCP service-account keys
+**/*-sa.json
 **/vertex-sa.json
-**/github_copilot/           # Copilot device-flow creds (access-token + api-key.json)
-litellm/.config/litellm/.env # real litellm env: master_key, copilot token, db url (use .env.example)
+# Copilot device-flow creds (access-token + api-key.json)
+**/github_copilot/
 
 misc/

@@ -1,0 +1,8 @@
+# opencode writes its own runtime files into ~/.config/opencode (bun deps for the
+# plugins). They are machine-local, so stow must not try to own them — otherwise
+# `stow --restow opencode` aborts with "existing target is not owned by stow".
+node_modules
+\.DS_Store
+^/\.config/opencode/package\.json$
+^/\.config/opencode/package-lock\.json$
+^/\.config/opencode/bun\.lock$

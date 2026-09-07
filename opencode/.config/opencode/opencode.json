@@ -45,7 +45,7 @@
     "code-review-graph": {
       "type": "local",
       "command": [
-        "/Users/maxence/.local/bin/code-review-graph",
+        "code-review-graph",
         "mcp"
       ]
     }

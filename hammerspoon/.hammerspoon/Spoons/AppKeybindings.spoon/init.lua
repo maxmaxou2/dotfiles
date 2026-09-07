@@ -8,8 +8,6 @@ obj.author = "Maxence"
 obj.homepage = ""
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
-local ALERTER = "/opt/homebrew/bin/alerter"
-
 -- Bundle IDs
 local VSCODE_BUNDLE = "com.microsoft.VSCode"
 local GHOSTTY_BUNDLE = "com.mitchellh.ghostty"
@@ -106,11 +104,7 @@ function obj:init()
 	self.appWatcher = hs.application.watcher.new(function(appName, event, app)
 		if event == hs.application.watcher.activated and app then
 			local bid = app:bundleID()
-			-- 1. Clear terminal-notifier alerts when Ghostty gets focus
-            if bid == GHOSTTY_BUNDLE then
-                hs.task.new(ALERTER, nil, {"--remove", "stay-alert"}):start()
-            end
-			-- 2. Handle pair tracking
+			-- Handle pair tracking
 			local key = bundleToKey[bid]
 			if key then
 				setLastFocused(key, bid)

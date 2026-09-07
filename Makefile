@@ -1,23 +1,30 @@
-.PHONY: help setup xcode-clt brew stow stay-alert context-mode agentmemory litellm restart-litellm tmux-plugins verify-symlinks
+.PHONY: help setup xcode-clt brew stow jaynalerts context-mode agentmemory litellm restart-litellm tmux-plugins verify-symlinks
 
-STAY_ALERT_REPO ?= git@github.com:maxmaxou2/stay-alert.git
-STAY_ALERT_DIR  ?= $(HOME)/src/stay-alert
+# Private repo under the jaynlabs org, so SSH (HTTPS would need a PAT anyway).
+# A fresh Mac therefore needs its key on GitHub before `make setup` reaches here.
+JAYNALERTS_REPO ?= git@github.com:jaynlabs/jaynalerts.git
+JAYNALERTS_DIR  ?= $(HOME)/src/jaynalerts
 STOW_PACKAGES   ?= clang-format claude conda hammerspoon karabiner litellm nvim opencode pdb rich ssh tmux tmuxp zsh
+
+# /opt/homebrew on Apple Silicon, /usr/local on Intel.
+BREW_PREFIX     ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
+# launchd jobs inherit almost nothing, so the plists carry an explicit PATH.
+LAUNCHD_PATH    ?= $(HOME)/.local/bin:$(BREW_PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
 
 help:
 	@echo "Targets:"
-	@echo "  setup            Run xcode-clt, brew, stow, stay-alert, context-mode, tmux-plugins"
+	@echo "  setup            Run xcode-clt, brew, stow, jaynalerts, context-mode, tmux-plugins"
 	@echo "  xcode-clt        Install Xcode Command Line Tools (provides swiftc) if missing"
 	@echo "  brew             Symlink .Brewfile and run brew bundle --global"
 	@echo "  stow             Symlink dotfile packages via GNU stow (--restow for idempotency)"
-	@echo "  stay-alert       Clone (if missing) and install stay-alert (bun link + init)"
+	@echo "  jaynalerts       Clone (if missing) and install jaynalerts (bun link + init)"
 	@echo "  context-mode     Install context-mode globally via npm (opencode plugin only)"
 	@echo "  agentmemory      Install agentmemory (npm), launchd autostart server, claude plugin"
 	@echo "  litellm          Install litellm proxy (uv), launchd autostart, Vertex/Gemini for agentmemory compression"
 	@echo "  tmux-plugins     Bootstrap TPM and install tmux plugins"
 	@echo "  verify-symlinks  Check that critical claude/opencode configs are symlinked into HOME"
 
-setup: xcode-clt brew stow stay-alert context-mode agentmemory litellm tmux-plugins verify-symlinks
+setup: xcode-clt brew stow jaynalerts context-mode agentmemory litellm tmux-plugins verify-symlinks
 
 xcode-clt:
 	@xcode-select -p >/dev/null 2>&1 || xcode-select --install
@@ -26,20 +33,32 @@ brew:
 	@test -L $(HOME)/.Brewfile || ln -s $(CURDIR)/.Brewfile $(HOME)/.Brewfile
 	-brew bundle --global
 
+# --dir/--target are passed explicitly because stow otherwise installs into the
+# repo's PARENT directory, which is only $$HOME when the repo sits at ~/dotfiles.
 stow:
-	stow --restow $(STOW_PACKAGES)
+	@find $(CURDIR) -name .DS_Store -not -path "$(CURDIR)/.git/*" -delete
+	stow --restow --dir=$(CURDIR) --target=$(HOME) $(STOW_PACKAGES)
 
-stay-alert:
-	@test -d $(STAY_ALERT_DIR) || git clone $(STAY_ALERT_REPO) $(STAY_ALERT_DIR)
-	$(MAKE) -C $(STAY_ALERT_DIR) setup
+# jaynalerts' own `make setup` runs `jaynalerts init --shell-rc ~/.zshrc`, which
+# writes its managed block into the stowed ~/.zshrc — i.e. into zsh/.zshrc in this
+# repo. That is intentional (the block stays version controlled) and idempotent,
+# but it means `make stow` has to have run first.
+jaynalerts: stow
+	@test -d $(JAYNALERTS_DIR) || git clone $(JAYNALERTS_REPO) $(JAYNALERTS_DIR)
+	$(MAKE) -C $(JAYNALERTS_DIR) setup
+	@mkdir -p $(CURDIR)/opencode/.config/opencode/node_modules
+	@ln -sfn $(JAYNALERTS_DIR) $(CURDIR)/opencode/.config/opencode/node_modules/jaynalerts
+	@echo "opencode plugin resolution: node_modules/jaynalerts -> $(JAYNALERTS_DIR)"
 
 context-mode:
 	@command -v npm >/dev/null 2>&1 || { echo "npm not found — install node first (brew install node)"; exit 1; }
 	npm install -g context-mode
 	@command -v context-mode >/dev/null 2>&1 && echo "context-mode installed" || echo "context-mode install verify failed"
-	@mkdir -p $(HOME)/.config/opencode
-	@test -L $(HOME)/.config/opencode/AGENTS.md || ln -sf ../../dotfiles/opencode/.config/opencode/AGENTS.md $(HOME)/.config/opencode/AGENTS.md
-	@echo "AGENTS.md symlinked: $$(readlink $(HOME)/.config/opencode/AGENTS.md)"
+	@if [ -L $(HOME)/.config/opencode/AGENTS.md ] || [ -L $(HOME)/.config/opencode ]; then \
+		echo "AGENTS.md linked via stow"; \
+	else \
+		echo "AGENTS.md not linked — run 'make stow' (opencode package)"; \
+	fi
 
 agentmemory:
 	@command -v npm >/dev/null 2>&1 || { echo "npm not found — install node first (brew install node)"; exit 1; }
@@ -56,10 +75,23 @@ agentmemory:
 		echo "WARN: ~/.agentmemory/.env still has placeholder OPENAI_API_KEY — set it before daemon will compress observations"; \
 	fi
 	@mkdir -p $(HOME)/Library/LaunchAgents
-	@cp $(CURDIR)/agentmemory/ai.agentmemory.plist $(HOME)/Library/LaunchAgents/ai.agentmemory.plist
+	@BIN="$$(command -v agentmemory)"; \
+	if [ -z "$$BIN" ]; then echo "agentmemory not on PATH — cannot render launchd plist"; exit 1; fi; \
+	sed -e "/<!--/,/-->/d" -e "s|@HOME@|$(HOME)|g" -e "s|@PATH@|$(LAUNCHD_PATH)|g" -e "s|@AGENTMEMORY_BIN@|$$BIN|g" \
+		$(CURDIR)/agentmemory/ai.agentmemory.plist.in > $(HOME)/Library/LaunchAgents/ai.agentmemory.plist
 	@launchctl bootout gui/$$(id -u)/ai.agentmemory 2>/dev/null || true
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+		launchctl print gui/$$(id -u)/ai.agentmemory >/dev/null 2>&1 || break; \
+		sleep 1; \
+	done
 	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.agentmemory.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.agentmemory.plist
-	@sleep 1; curl -fsS http://localhost:3111/agentmemory/health >/dev/null 2>&1 && echo "server healthy: http://localhost:3111" || echo "server not responding yet (check ~/.agentmemory/daemon.log)"
+	@for i in $$(seq 1 15); do \
+		curl -fsS http://localhost:3111/agentmemory/health >/dev/null 2>&1 && break; \
+		sleep 2; \
+	done; \
+	curl -fsS http://localhost:3111/agentmemory/health >/dev/null 2>&1 \
+		&& echo "server healthy: http://localhost:3111" \
+		|| echo "server not responding after 30s (check ~/.agentmemory/daemon.log)"
 	@claude plugin marketplace add rohitg00/agentmemory 2>/dev/null || true
 	@claude plugin install agentmemory@agentmemory 2>/dev/null || echo "claude plugin install: run '/plugin install agentmemory' in Claude Code if CLI failed"
 	@echo "Claude Code: hooks+skills+MCP via plugin. opencode: plugin+MCP+commands via 'make stow' (opencode package)."
@@ -68,13 +100,26 @@ litellm:
 	@command -v uv >/dev/null 2>&1 || brew install uv
 	uv tool install "litellm[proxy]" --with google-cloud-aiplatform --with google-auth --force
 	@mkdir -p $(HOME)/.config/litellm
+	@mkdir -p $(HOME)/Library/LaunchAgents
 	@if [ ! -f $(HOME)/.config/litellm/.env ]; then \
-		cp $(CURDIR)/litellm/.config/litellm/.env.example $(HOME)/.config/litellm/.env; \
+		sed -e "s|@HOME@|$(HOME)|g" -e "s|@USER@|$$(id -un)|g" \
+			$(CURDIR)/litellm/.config/litellm/.env.example > $(HOME)/.config/litellm/.env; \
 		chmod 600 $(HOME)/.config/litellm/.env; \
-		echo "ACTION REQUIRED: edit ~/.config/litellm/.env with your actual secrets."; \
+		echo "ACTION REQUIRED: edit ~/.config/litellm/.env — LITELLM_MASTER_KEY, GITHUB_TOKEN,"; \
+		echo "                 OPENCODE_API_KEY and VERTEX_PROJECT are empty in the template."; \
 	else echo "~/.config/litellm/.env exists — leaving as-is"; fi
-	@cp $(CURDIR)/litellm/ai.litellm.plist $(HOME)/Library/LaunchAgents/ai.litellm.plist
+	@for v in LITELLM_MASTER_KEY VERTEX_PROJECT VERTEX_CREDENTIALS DATABASE_URL; do \
+		grep -qE "^$$v=." $(HOME)/.config/litellm/.env 2>/dev/null || \
+			echo "WARN: $$v unset in ~/.config/litellm/.env — config.yaml resolves it via os.environ/"; \
+	done
+	@BIN="$$(command -v litellm || echo $(HOME)/.local/bin/litellm)"; \
+	sed -e "/<!--/,/-->/d" -e "s|@HOME@|$(HOME)|g" -e "s|@PATH@|$(LAUNCHD_PATH)|g" -e "s|@LITELLM_BIN@|$$BIN|g" \
+		$(CURDIR)/litellm/ai.litellm.plist.in > $(HOME)/Library/LaunchAgents/ai.litellm.plist
 	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+		launchctl print gui/$$(id -u)/ai.litellm >/dev/null 2>&1 || break; \
+		sleep 1; \
+	done
 	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
 	@if [ ! -f $(HOME)/.config/litellm/vertex-sa.json ]; then \
 		echo "WARN: ~/.config/litellm/vertex-sa.json missing — Vertex calls will 401 (place GCP service-account JSON there, chmod 600)"; \
@@ -82,24 +127,34 @@ litellm:
 	@if ! grep -q "LITELLM_MASTER_KEY" $(HOME)/.zshrc_private 2>/dev/null; then \
 		echo "ACTION REQUIRED: export LITELLM_MASTER_KEY=<master_key> in ~/.zshrc_private — opencode litellm provider (architect-gemini) sends empty bearer without it (401)"; \
 	fi
-	@sleep 12; if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
+	@for i in $$(seq 1 30); do \
+		curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1 && break; \
+		sleep 2; \
+	done; \
+	if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
 		echo "litellm healthy: http://localhost:4000"; \
 	else \
-		echo "litellm not responding — last log lines:"; \
+		echo "litellm not responding after 60s — last log lines:"; \
 		tail -20 $(HOME)/.config/litellm/litellm.log 2>/dev/null || echo "(no log at ~/.config/litellm/litellm.log)"; \
 	fi
 
 restart-litellm:
 	@echo "Killing ai.litellm..."
 	@launchctl bootout gui/$$(id -u)/ai.litellm 2>/dev/null || true
-	@sleep 1
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+		launchctl print gui/$$(id -u)/ai.litellm >/dev/null 2>&1 || break; \
+		sleep 1; \
+	done
 	@echo "Starting ai.litellm..."
 	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/ai.litellm.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/ai.litellm.plist
-	@sleep 12
-	@if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
+	@for i in $$(seq 1 30); do \
+		curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1 && break; \
+		sleep 2; \
+	done; \
+	if curl -fsS http://localhost:4000/health/liveliness >/dev/null 2>&1; then \
 		echo "litellm healthy: http://localhost:4000"; \
 	else \
-		echo "litellm not responding — last log lines:"; \
+		echo "litellm not responding after 60s — last log lines:"; \
 		tail -20 $(HOME)/.config/litellm/litellm.log 2>/dev/null || echo "(no log at ~/.config/litellm/litellm.log)"; \
 	fi
 
@@ -124,10 +179,14 @@ tmux-plugins:
 		$(HOME)/.tmux/plugins/tpm/bin/install_plugins; \
 	fi
 
+# ~/.claude and ~/.config/opencode become real directories as soon as anything
+# else writes into them, so check the stowed files rather than the directories.
 verify-symlinks:
 	@echo "Verifying critical symlinks..."
-	@for f in $(HOME)/.claude $(HOME)/.config/opencode $(HOME)/.config/opencode/AGENTS.md $(HOME)/.Brewfile; do \
-		if [ -L "$$f" ]; then echo "  ok  $$f -> $$(readlink $$f)"; \
-		elif [ -e "$$f" ]; then echo "  WARN $$f exists but is NOT a symlink (run 'make stow' after removing real file)"; \
-		else echo "  MISS $$f missing"; fi; \
+	@for f in $(HOME)/.claude/settings.json $(HOME)/.claude/CLAUDE.md \
+	          $(HOME)/.config/opencode/opencode.json $(HOME)/.config/opencode/AGENTS.md \
+	          $(HOME)/.zshrc $(HOME)/.zshrc_base $(HOME)/.tmux.conf $(HOME)/.Brewfile; do \
+		if [ -L "$$f" ]; then echo "  ok   $$f -> $$(readlink $$f)"; \
+		elif [ -e "$$f" ]; then echo "  WARN $$f exists but is NOT a symlink (remove it, then 'make stow')"; \
+		else echo "  MISS $$f missing (run 'make stow')"; fi; \
 	done

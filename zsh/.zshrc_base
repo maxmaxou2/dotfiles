@@ -1,3 +1,20 @@
+# _______ Homebrew _______
+# Resolve the prefix instead of hardcoding it: /opt/homebrew on Apple Silicon,
+# /usr/local on Intel. Everything below that needs brew uses $BREW_PREFIX.
+if [ -z "${BREW_PREFIX:-}" ]; then
+  if command -v brew >/dev/null 2>&1; then
+    BREW_PREFIX=$(brew --prefix)
+  elif [ -x /opt/homebrew/bin/brew ]; then
+    BREW_PREFIX=/opt/homebrew
+  elif [ -x /usr/local/bin/brew ]; then
+    BREW_PREFIX=/usr/local
+  fi
+fi
+if [ -n "${BREW_PREFIX:-}" ] && [ -x "$BREW_PREFIX/bin/brew" ]; then
+  eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+fi
+export BREW_PREFIX
+
 # _______ Env variables _______
 
 export HISTFILE=~/.zsh_history
@@ -15,7 +32,7 @@ export CASE_SENSITIVE=true  # prefer case sensitive complete
 
 export HOMEBREW_NO_AUTO_UPDATE=1  # Disable homebrew auto update on install
 
-export PYTHONSTARTUP=$HOME/.config/python_startup.py
+[ -f "$HOME/.config/python_startup.py" ] && export PYTHONSTARTUP="$HOME/.config/python_startup.py"
 
 export DISABLE_AUTO_TITLE=true
 
@@ -114,7 +131,10 @@ alias gb='git branch'
 alias gs='git status'
 alias ga='git add'
 alias glog='git log --oneline --graph --decorate --all'
-alias python3=$(which python)
+# Point python3 at whatever `python` resolves to (conda env, pyenv...) when there
+# is one. Unguarded, $(which python) on a machine without a bare `python` expands
+# to nothing and the alias silently shadows the real python3.
+command -v python >/dev/null 2>&1 && alias python3="$(command -v python)"
 
 function fuzzy_gco() {
   branch=`git branch -a| fzf`
@@ -196,26 +216,34 @@ autoload -Uz compinit && compinit  # after plugins definition
 # _______ Anything else _______
 
 # >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/opt/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/opt/miniconda3/etc/profile.d/conda.sh"
+# Derived from `conda init`, but probing the usual install prefixes rather than the
+# single one this machine happens to use: standalone installer, brew cask, or ~/.
+for __conda_prefix in \
+    "$HOME/miniconda3" \
+    "$HOME/miniforge3" \
+    "${BREW_PREFIX:-/opt/homebrew}/Caskroom/miniconda/base" \
+    /opt/miniconda3; do
+    [ -x "$__conda_prefix/bin/conda" ] || continue
+    __conda_setup="$("$__conda_prefix/bin/conda" 'shell.zsh' 'hook' 2>/dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    elif [ -f "$__conda_prefix/etc/profile.d/conda.sh" ]; then
+        . "$__conda_prefix/etc/profile.d/conda.sh"
     else
-        export PATH="/opt/miniconda3/bin:$PATH"
+        export PATH="$__conda_prefix/bin:$PATH"
     fi
-fi
-unset __conda_setup
+    break
+done
+unset __conda_setup __conda_prefix
 # <<< conda initialize <<<
 
-# Add brew to path
-export PATH="/opt/homebrew/bin:$PATH"
+# brew is already on PATH via the shellenv eval at the top of this file.
 
 
 # "code" command to open visual studio code
-export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+_vscode_cli="/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+[ -d "$_vscode_cli" ] && export PATH="$_vscode_cli:$PATH"
+unset _vscode_cli
 
 #fzf config
 if command -v fzf &> /dev/null; then
@@ -224,18 +252,19 @@ fi
 
 alias k=kubectl
 
-# This look like it's for Rust the language
-. "$HOME/.cargo/env"
+# Rust toolchain (rustup). Guarded: sourcing it unguarded aborts .zshrc on a
+# machine without rust.
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# I think this is for uv
-. "$HOME/.local/bin/env"
+# uv drops its PATH shim here. Guarded for the same reason as ~/.cargo/env.
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 
 # pnpm
-export PNPM_HOME="/Users/maxence/Library/pnpm"
+export PNPM_HOME="$HOME/Library/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -252,7 +281,7 @@ fi
 alias nvim-test='NVIM_APPNAME=nvim-test nvim'
 
 # bun completions
-[ -s "/Users/maxence/.bun/_bun" ] && source "/Users/maxence/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"

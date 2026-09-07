@@ -1,10 +1,9 @@
 tap "minio/stable"
 tap "oven-sh/bun"
-tap "vjeantet/tap"
 tap "zitadel/tap"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
-# JavaScript runtime, used by stay-alert
+# JavaScript runtime, used by jaynalerts
 brew "oven-sh/bun/bun"
 # Symlink farm manager
 brew "stow"
@@ -85,12 +84,12 @@ brew "tmuxp"
 brew "ical-buddy"
 # Python package manager / tool runner (required for litellm)
 brew "uv"
-# Native notification CLI used by some scripts
-brew "vjeantet/tap/alerter"
 # Watch files and take action when they change
 brew "watchman"
 # Internet file retriever
 brew "wget"
+# Conda distribution — .zshrc_base initialises it, conda/.condarc configures it
+cask "miniconda"
 # Docker Desktop (cask was renamed from `docker` to `docker-desktop`)
 cask "docker-desktop"
 # Terminal emulator that uses platform-native UI and GPU acceleration

@@ -11,7 +11,9 @@ export PATH="$HOME/.bun/bin:$PATH"
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # postgresql@16 (keg-only — both @14 and @16 installed, neither auto-linked)
-export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+# $BREW_PREFIX is set by .zshrc_base, sourced above.
+[ -d "${BREW_PREFIX:-/opt/homebrew}/opt/postgresql@16/bin" ] \
+  && export PATH="${BREW_PREFIX:-/opt/homebrew}/opt/postgresql@16/bin:$PATH"
 
 
 # Ensure ~/.local/bin is on PATH (claude, uv, etc. — before uv's env script)

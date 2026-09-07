@@ -1,24 +1,28 @@
+# Every `os.environ/X` below is resolved by the proxy at load time from the
+# environment. The launchd job sources ~/.config/litellm/.env before exec, so
+# machine-specific values (project id, credential path, db url) live there and
+# never in this committed file. See .env.example.
 model_list:
   # ── Vertex AI (existing) ──────────────────────────────────────────
   - model_name: gemini-flash
     litellm_params:
       model: vertex_ai/gemini-2.5-flash
-      vertex_project: jayn-dev
+      vertex_project: "os.environ/VERTEX_PROJECT"
       vertex_location: europe-west4
-      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      vertex_credentials: "os.environ/VERTEX_CREDENTIALS"
       reasoning_effort: disable
   - model_name: gemini-3-pro
     litellm_params:
       model: vertex_ai/gemini-3.1-pro-preview
-      vertex_project: jayn-dev
+      vertex_project: "os.environ/VERTEX_PROJECT"
       vertex_location: global
-      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      vertex_credentials: "os.environ/VERTEX_CREDENTIALS"
   - model_name: vertex-embed
     litellm_params:
       model: vertex_ai/gemini-embedding-2
-      vertex_project: jayn-dev
+      vertex_project: "os.environ/VERTEX_PROJECT"
       vertex_location: global
-      vertex_credentials: /Users/maxence/.config/litellm/vertex-sa.json
+      vertex_credentials: "os.environ/VERTEX_CREDENTIALS"
       dimensions: 768
 
   # ── GitHub Copilot ──────────────────────────────────────────────
@@ -65,4 +69,4 @@ litellm_settings:
   drop_params: true
 general_settings:
   master_key: "os.environ/LITELLM_MASTER_KEY"
-  database_url: postgresql://maxence@localhost:5432/litellm
+  database_url: "os.environ/DATABASE_URL"

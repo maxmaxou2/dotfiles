@@ -21,11 +21,11 @@ return {
 		workspaces = {
 			{
 				name = "perso",
-				path = "/Users/maxence/Library/Mobile Documents/iCloud~md~obsidian/Documents/Perso",
+				path = vim.fn.expand("~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Perso"),
 			},
 			{
 				name = "Work",
-				path = "/Users/maxence/Library/Mobile Documents/iCloud~md~obsidian/Documents/Work",
+				path = vim.fn.expand("~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Work"),
 			},
 		},
 
