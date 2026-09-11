@@ -70,3 +70,9 @@ litellm_settings:
 general_settings:
   master_key: "os.environ/LITELLM_MASTER_KEY"
   database_url: "os.environ/DATABASE_URL"
+  # Postgres drops its connection across laptop sleep/wake and Prisma does not
+  # reconnect, which made user_api_key_auth raise and every request 500 —
+  # agentmemory saw those as "OpenAI API error (500)" and 60s timeouts until its
+  # circuit breaker opened. Spend logging still needs the db, so keep it and let
+  # auth fall back to the in-memory master key while the db is unreachable.
+  allow_requests_on_db_unavailable: true

@@ -38,5 +38,6 @@
   "vim-test": { "branch": "master", "commit": "d29ec9976fd6b684488c908e6c7c72a3a7a0cb7f" },
   "vim-tmux-navigator": { "branch": "master", "commit": "e41c431a0c7b7388ae7ba341f01a0d217eb3a432" },
   "windows.nvim": { "branch": "main", "commit": "c7492552b23d0ab30325e90b56066ec51242adc8" },
-  "yeet.nvim": { "branch": "master", "commit": "31046346b4f146e337c3f1fda604f0e1e25e1df7" }
+  "yeet.nvim": { "branch": "master", "commit": "31046346b4f146e337c3f1fda604f0e1e25e1df7" },
+  "zoom-sync": { "branch": "master", "commit": "22330683c4c30336bd6c78b8bd270a9d5f5f1297" }
 }
