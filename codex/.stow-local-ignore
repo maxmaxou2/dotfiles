@@ -1,0 +1,17 @@
+# ~/.codex is mostly runtime state: auth.json, half a dozen sqlite databases
+# (thread_history, logs, state, queue, memories, goals), sessions/, plugins/
+# cache, shell_snapshots/ and context-mode/. Only the declarative config is
+# stowed; these patterns keep stow from ever owning the rest.
+^/\.codex/auth\.json$
+^/\.codex/config\.json$
+^/\.codex/sessions$
+^/\.codex/plugins$
+^/\.codex/skills$
+^/\.codex/context-mode$
+^/\.codex/shell_snapshots$
+^/\.codex/log$
+^/\.codex/cache$
+^/\.codex/tmp$
+.*\.sqlite.*
+.*\.jsonl$
+\.DS_Store

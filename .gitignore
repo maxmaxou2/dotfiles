@@ -33,6 +33,13 @@ node_modules/
 # `os.environ/X` lookup resolved from ~/.config/litellm/.env at proxy startup.
 # Only *.env.example templates are committed.
 **/.env
+# Agent credentials (pi ~/.pi/agent/auth.json, codex ~/.codex/auth.json)
+**/auth.json
+# pi provider cache, ~110KB of machine-local churn
+**/models-store.json
+# codex runtime state (sqlite dbs, transcripts, session index)
+**/.codex/*.sqlite*
+**/.codex/*.jsonl
 # GCP service-account keys
 **/*-sa.json
 **/vertex-sa.json

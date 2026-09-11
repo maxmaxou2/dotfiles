@@ -1,0 +1,9 @@
+# pi writes machine-local state next to its config in ~/.pi/agent: auth.json
+# (credentials), models-store.json (a ~110KB provider cache), sessions/ and a
+# vendored fd binary. None of that is committed, but keep stow from ever owning
+# those names if one shows up inside the package.
+^/\.pi/agent/auth\.json$
+^/\.pi/agent/models-store\.json$
+^/\.pi/agent/sessions$
+^/\.pi/agent/bin$
+\.DS_Store

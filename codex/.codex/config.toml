@@ -1,0 +1,138 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "xhigh"
+approvals_reviewer = "auto_review"
+notify = ["jaynalerts", "codex-hook"]
+
+[projects."/Users/maxence"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/TECH-EUROPE-HACK"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/task-canvas-overlay"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/TECH-EUROPE-overlay"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/atlas"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/tmp"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/tmp/concours_prog_dev/submission_online"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/tmp/concours_prog_dev"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/welding-apprauto"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/majorsquad-elite-launch"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/elite-connect"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/jayn-caveman"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/jayn-landing"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/jaynred"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/headroom"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/jaynalerts"]
+trust_level = "trusted"
+
+[mcp_servers.code-review-graph]
+command = "uvx"
+args = [
+    "code-review-graph",
+    "serve",
+]
+cwd = "/Users/maxence/src/jayn-main"
+type = "stdio"
+
+[tui]
+notifications = false
+status_line = ["model-with-reasoning", "current-dir", "context-used", "weekly-limit", "five-hour-limit"]
+status_line_use_colors = true
+
+[tui.model_availability_nux]
+"gpt-5.6-sol" = 1
+gpt-6-astra = 4
+
+[hooks.state]
+
+[hooks.state."/Users/maxence/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:f9177b380fa0c5c2b4bd5b2084b7e58e4730a23e23fbab93ada4b0494b02f5ca"
+enabled = false
+
+[hooks.state."/Users/maxence/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:2062c864c5235a8235f11beaa253235104353f9e5e96975f057c6c1abf5303c1"
+enabled = false
+
+[hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:72fade31ac7a95e92bef200e83eae770f6961a9f6ff9f12596c3bccc1dfc566e"
+
+[hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:post_tool_use:0:0"]
+trusted_hash = "sha256:1b8a64f14c07f7f42d9e22ba4b4907027dbd7e4dc5d4db6c34c53b9263b2620b"
+
+[hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:pre_compact:0:0"]
+trusted_hash = "sha256:2d124c2cc70523587a243fb166c16aa343b2fca616fd9f77bd44ab74a75bcfae"
+
+[hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:session_start:0:0"]
+trusted_hash = "sha256:7b09a5a4e6f0bd5f6c7441a26e91fd060c1b4481028cc26aded89331ef90a8b0"
+
+[hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:8f9e09b1ebf8c8b80a16c1c50203868d851c33942ce8e7cc1b26c4e4b6de891d"
+
+[hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:stop:0:0"]
+trusted_hash = "sha256:b9dfa7fe6d1c0cb5d9c539f73f44f7239043bfc2751126c317360b1dde249a3a"
+
+[hooks.state."/Users/maxence/.codex/hooks.json:permission_request:0:0"]
+trusted_hash = "sha256:c1723a01b67f918c331a806feba171453c21b914bcb4654c35c5d7abece812ef"
+
+[marketplaces.agentmemory]
+last_updated = "2026-08-21T08:11:22Z"
+last_revision = "2d38dafede67d0d4ed920cde94d2106e98825b8a"
+source_type = "git"
+source = "https://github.com/rohitg00/agentmemory.git"
+
+[marketplaces.claude-plugins-official]
+last_updated = "2026-08-22T13:28:44Z"
+last_revision = "340e33aef211d95769d252324854497af871dafe"
+source_type = "git"
+source = "https://github.com/anthropics/claude-plugins-official.git"
+
+[plugins."agentmemory@agentmemory"]
+enabled = true
+
+[plugins."agentmemory@agentmemory".mcp_servers.agentmemory.tools.memory_smart_search]
+approval_mode = "approve"
+
+[plugins."agentmemory@agentmemory".mcp_servers.agentmemory.tools.memory_save]
+approval_mode = "approve"
+
+[plugins."clangd-lsp@claude-plugins-official"]
+enabled = true
+
+[plugins."frontend-design@claude-plugins-official"]
+enabled = true
+
+[plugins."lua-lsp@claude-plugins-official"]
+enabled = true
+
+[plugins."swift-lsp@claude-plugins-official"]
+enabled = true
+
+[notice]
+hide_rate_limit_model_nudge = true
+

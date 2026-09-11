@@ -45,6 +45,15 @@
             "statusMessage": "Tracking caveman mode..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.local/bin/jaynshare title-hook",
+            "timeout": 2
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -61,7 +70,9 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "\"$HOME/.claude/hooks/caveman-arm-guard.sh\" --badge bash \"$HOME/.claude/hooks/caveman-statusline.sh\""
+    "command": "~/.local/bin/jaynshare status --line",
+    "refreshInterval": 15,
+    "padding": 1
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
@@ -89,7 +100,7 @@
   "autoCompactWindow": 400000,
   "promptSuggestionEnabled": false,
   "tui": "fullscreen",
-  "theme": "dark",
+  "theme": "custom:jaynshare",
   "preferredNotifChannel": "notifications_disabled",
   "agentPushNotifEnabled": true,
   "enableArtifact": false

@@ -28,7 +28,7 @@ make setup
 ```
 
 This runs `make xcode-clt`, `make brew`, `make stow`, `make jaynalerts`, `make context-mode`,
-`make agentmemory`, `make litellm`, `make tmux-plugins`, `make verify-symlinks`
+`make agentmemory`, `make litellm`, `make pi`, `make codex`, `make tmux-plugins`, `make verify-symlinks`
 (see [Makefile](Makefile) for all targets).
 
 The repo does not have to live at `~/dotfiles` — `make stow` passes
@@ -68,6 +68,63 @@ Replaces the older `stay-alert`. jaynalerts notifies through its own Swift
 terminal is focused, sticky when it is not), so the Hammerspoon hook that used to
 clear `alerter` notifications on Ghostty focus — and the `alerter` dependency
 itself — are gone.
+
+### pi (coding agent)
+```
+make pi                # npm install -g @earendil-works/pi-coding-agent, then check the stowed config
+make verify-symlinks
+```
+
+pi reads everything from `~/.pi/agent/`, which mixes config with machine-local state,
+so the `pi` stow package owns only two paths:
+
+- `pi/.pi/agent/settings.json` — provider/model defaults, theme, steering mode. pi
+  rewrites this file in place (e.g. `lastChangelogVersion` after an upgrade), and
+  since it is a symlink those writes land in this repo. That is intentional.
+- `pi/.pi/agent/extensions/jaynalerts.ts` — the notification extension, written by
+  `jaynalerts init --pi` through the symlink. Same managed-file deal as the
+  jaynalerts block in `zsh/.zshrc`.
+
+Everything else in `~/.pi/agent` stays machine-local and is kept out both by
+`pi/.stow-local-ignore` and by the root `.gitignore`: `auth.json` (credentials),
+`models-store.json` (~110KB provider cache), `sessions/`, and a vendored `fd` binary
+under `bin/`.
+
+Skills are **not** duplicated per agent: pi and Codex both read `~/.agents/skills`,
+which is populated with symlinks into `claude/.claude/skills` — one copy serves
+Claude Code, Codex and pi.
+
+### Codex CLI
+```
+make codex             # npm install -g @openai/codex, then check the stowed config
+make verify-symlinks
+```
+
+Like pi, `~/.codex` mixes config with a lot of runtime state, so the `codex` package
+stows only the declarative half:
+
+- `codex/.codex/config.toml` — model, reasoning effort, TUI/status line, MCP servers,
+  plugins and marketplaces. **Expect churn**: Codex appends a `[projects."<path>"]
+  trust_level` block every time you trust a new directory, and rewrites
+  `[hooks.state]` `trusted_hash` values and `[marketplaces]` revisions on its own.
+  Those are machine-local by nature but live in the same file as the real config,
+  so they ride along in the diffs.
+- `codex/.codex/hooks.json` — the code-review-graph `PostToolUse`/`SessionStart`
+  hooks and the jaynalerts `PermissionRequest` hook.
+- `codex/.codex/agents/*.toml` — the cavecrew subagents, mirroring
+  `claude/.claude/agents/`.
+- `codex/.codex/rules/default.rules` — the command allowlist. Codex appends a
+  `prefix_rule(...)` here each time you approve a command, so this file grows
+  through the symlink into this repo.
+
+Everything else stays machine-local and is excluded by `codex/.stow-local-ignore`
+plus the root `.gitignore`: `auth.json`, the sqlite databases
+(`thread_history_1`, `logs_2`, `state_5`, `queue_1`, `memories_1`, `goals_1`),
+`sessions/`, `history.jsonl`, `plugins/` cache, `shell_snapshots/` and
+`context-mode/`.
+
+`~/.codex/agents` and `~/.codex/rules` are folded by stow into directory symlinks,
+so anything Codex writes there is version controlled automatically.
 
 ### context-mode (token-saving routing for opencode)
 ```

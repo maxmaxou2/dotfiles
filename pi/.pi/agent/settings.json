@@ -1,0 +1,10 @@
+{
+  "lastChangelogVersion": "0.85.1",
+  "theme": "dark",
+  "images": {
+    "blockImages": false
+  },
+  "steeringMode": "all",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "glm-5.3-flash"
+}

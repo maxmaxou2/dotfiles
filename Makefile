@@ -1,10 +1,10 @@
-.PHONY: help setup xcode-clt brew stow jaynalerts context-mode agentmemory litellm restart-litellm tmux-plugins verify-symlinks
+.PHONY: help setup xcode-clt brew stow jaynalerts context-mode agentmemory litellm restart-litellm pi codex tmux-plugins verify-symlinks
 
 # Private repo under the jaynlabs org, so SSH (HTTPS would need a PAT anyway).
 # A fresh Mac therefore needs its key on GitHub before `make setup` reaches here.
 JAYNALERTS_REPO ?= git@github.com:jaynlabs/jaynalerts.git
 JAYNALERTS_DIR  ?= $(HOME)/src/jaynalerts
-STOW_PACKAGES   ?= clang-format claude conda hammerspoon karabiner litellm nvim opencode pdb rich ssh tmux tmuxp zsh
+STOW_PACKAGES   ?= clang-format claude codex conda hammerspoon karabiner litellm nvim opencode pdb pi rich ssh tmux tmuxp zsh
 
 # /opt/homebrew on Apple Silicon, /usr/local on Intel.
 BREW_PREFIX     ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
@@ -21,10 +21,12 @@ help:
 	@echo "  context-mode     Install context-mode globally via npm (opencode plugin only)"
 	@echo "  agentmemory      Install agentmemory (npm), launchd autostart server, claude plugin"
 	@echo "  litellm          Install litellm proxy (uv), launchd autostart, Vertex/Gemini for agentmemory compression"
+	@echo "  pi               Install the pi coding agent (npm) and link its stowed config"
+	@echo "  codex            Install the Codex CLI (npm) and link its stowed config"
 	@echo "  tmux-plugins     Bootstrap TPM and install tmux plugins"
 	@echo "  verify-symlinks  Check that critical claude/opencode configs are symlinked into HOME"
 
-setup: xcode-clt brew stow jaynalerts context-mode agentmemory litellm tmux-plugins verify-symlinks
+setup: xcode-clt brew stow jaynalerts context-mode agentmemory litellm pi codex tmux-plugins verify-symlinks
 
 xcode-clt:
 	@xcode-select -p >/dev/null 2>&1 || xcode-select --install
@@ -158,6 +160,35 @@ restart-litellm:
 		tail -20 $(HOME)/.config/litellm/litellm.log 2>/dev/null || echo "(no log at ~/.config/litellm/litellm.log)"; \
 	fi
 
+# pi keeps auth.json, models-store.json, sessions/ and a vendored fd binary in
+# ~/.pi/agent alongside its config, so only settings.json and extensions/ are
+# stowed. `jaynalerts init --pi` rewrites extensions/jaynalerts.ts through the
+# symlink, i.e. back into this repo — same deal as the managed ~/.zshrc block.
+pi: stow
+	@command -v npm >/dev/null 2>&1 || { echo "npm not found — install node first (brew install node)"; exit 1; }
+	npm install -g @earendil-works/pi-coding-agent
+	@command -v pi >/dev/null 2>&1 && echo "pi installed ($$(pi --version))" || echo "pi install verify failed"
+	@if [ -L $(HOME)/.pi/agent/settings.json ]; then \
+		echo "pi settings linked via stow"; \
+	else \
+		echo "pi settings not linked — remove $(HOME)/.pi/agent/settings.json, then run 'make stow'"; \
+	fi
+
+# Only the declarative half of ~/.codex is stowed (config.toml, hooks.json,
+# agents/, rules/). Everything else there is runtime state — auth.json, the
+# sqlite databases, sessions/, plugins/ cache — and stays machine-local.
+# Codex rewrites config.toml and rules/default.rules itself as you trust projects
+# and approve commands, so those edits land back in this repo through the symlink.
+codex: stow
+	@command -v npm >/dev/null 2>&1 || { echo "npm not found — install node first (brew install node)"; exit 1; }
+	npm install -g @openai/codex
+	@command -v codex >/dev/null 2>&1 && echo "codex installed ($$(codex --version))" || echo "codex install verify failed"
+	@if [ -L $(HOME)/.codex/config.toml ]; then \
+		echo "codex config linked via stow"; \
+	else \
+		echo "codex config not linked — remove $(HOME)/.codex/config.toml, then run 'make stow'"; \
+	fi
+
 tmux-plugins:
 	@TPM_DIR="$(HOME)/.tmux/plugins/tpm"; \
 	if [ ! -d "$$TPM_DIR" ]; then \
@@ -185,6 +216,7 @@ verify-symlinks:
 	@echo "Verifying critical symlinks..."
 	@for f in $(HOME)/.claude/settings.json $(HOME)/.claude/CLAUDE.md \
 	          $(HOME)/.config/opencode/opencode.json $(HOME)/.config/opencode/AGENTS.md \
+	          $(HOME)/.pi/agent/settings.json $(HOME)/.codex/config.toml \
 	          $(HOME)/.zshrc $(HOME)/.zshrc_base $(HOME)/.tmux.conf $(HOME)/.Brewfile; do \
 		if [ -L "$$f" ]; then echo "  ok   $$f -> $$(readlink $$f)"; \
 		elif [ -e "$$f" ]; then echo "  WARN $$f exists but is NOT a symlink (remove it, then 'make stow')"; \
