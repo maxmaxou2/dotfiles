@@ -51,6 +51,13 @@ trust_level = "trusted"
 [projects."/Users/maxence/src/jaynalerts"]
 trust_level = "trusted"
 
+[projects."/Users/maxence/src/jaynshare"]
+trust_level = "trusted"
+
+[projects."/Users/maxence/src/jaynshare-v2"]
+trust_level = "trusted"
+
+
 [mcp_servers.code-review-graph]
 command = "uvx"
 args = [

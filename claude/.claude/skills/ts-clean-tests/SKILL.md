@@ -1,211 +1,138 @@
 ---
 name: ts-clean-tests
-source: "ertugrul-dmr/clean-code-skills (https://github.com/ertugrul-dmr/clean-code-skills)"
-date_added: "2026-09-11"
-description: Use when writing, fixing, editing, or refactoring TypeScript tests. Enforces Clean Code principles—fast tests, boundary coverage, one assert per test.
-when_to_use: |
-  Also trigger on: slow or flaky tests, `test.skip`/`it.skip`/`.todo` without a clear reason, `test.only` left in committed code, tests that only cover the happy path, tests with multiple assertions about different concepts, missing boundary cases (empty arrays, off-by-one, page zero), or asks about "coverage gap" / "edge case".
+description: Write, repair, or refactor TypeScript tests that protect observable behavior and regressions without flakiness or implementation coupling. Use for coverage gaps, boundary cases, async tests, skipped or focused tests, and test design.
+metadata:
+  source: "ertugrul-dmr/clean-code-skills (https://github.com/ertugrul-dmr/clean-code-skills)"
+  date_added: "2026-09-11"
 ---
 
-# Clean Tests
+# Clean TypeScript Tests
 
-## T1: Insufficient Tests
+Write tests that provide proportionate confidence in observable behavior. Favor meaningful failure signals over assertion counts, coverage percentages, or rigid testing rituals.
 
-Test everything that could possibly break. Use coverage tools as a guide, not a goal.
+## Work in Project Context
+
+Before changing tests, inspect the implementation, public types, callers, nearby tests, test configuration, and package scripts. Follow the project's existing runner, assertion style, fixture conventions, and test layers; do not introduce another test framework or dependency unless requested.
+
+Run the narrowest relevant test before and after a change when practical, then run the affected suite in proportion to the change. Never weaken an assertion, delete a failing test, or update a snapshot merely to make the suite pass without understanding the behavioral difference.
+
+## T1: Test Observable Behavior and Risk
+
+Prioritize public contracts, important failure modes, regressions, and boundaries. Avoid testing private implementation details or adding tests for trivial code unless that behavior is a meaningful contract.
+
+Each test should protect a behavior that matters, reveal a plausible failure, or document an intentional edge case. “Test everything that could possibly break” is not a workable stopping condition.
+
+## T2: Cover Boundaries and Equivalence Classes
+
+Select cases from materially different behavior classes. Depending on the contract, useful candidates include empty and singleton inputs, exact limits, values immediately around limits, missing or malformed data, duplicates, ordering, and success and failure paths. Do not enumerate combinations that exercise the same behavior.
+
+Before:
 
 ```ts
-// Bad - only tests happy path
-test("divide", () => {
-  expect(divide(10, 2)).toBe(5);
-});
-
-// Good - tests edge cases too
-test("divide normal", () => {
-  expect(divide(10, 2)).toBe(5);
-});
-
-test("divide by zero", () => {
-  expect(() => divide(10, 0)).toThrow(RangeError);
-});
-
-test("divide negative", () => {
-  expect(divide(-10, 2)).toBe(-5);
+test("clamps a value", () => {
+  expect(clamp(5, 0, 10)).toBe(5);
 });
 ```
 
-## T2: Use a Coverage Tool
-
-Coverage tools report gaps in your testing strategy. Don't ignore them.
-
-```bash
-# Run with coverage
-vitest run --coverage
-
-# Aim for meaningful coverage, not 100%
-```
-
-## T3: Don't Skip Trivial Tests
-
-Trivial tests document behavior and catch regressions. They're worth more than their cost.
+After:
 
 ```ts
-// Worth having - documents expected behavior
-test("user default role", () => {
-  const user = new User("Alice");
-  expect(user.role).toBe("member");
+it.each([
+  { caseName: "below the minimum", value: -1, expected: 0 },
+  { caseName: "at the minimum", value: 0, expected: 0 },
+  { caseName: "inside the range", value: 5, expected: 5 },
+  { caseName: "at the maximum", value: 10, expected: 10 },
+  { caseName: "above the maximum", value: 11, expected: 10 },
+])("clamps a value $caseName", ({ value, expected }) => {
+  expect(clamp(value, 0, 10)).toBe(expected);
 });
 ```
 
-## T4: An Ignored Test Is a Question About an Ambiguity
+## T3: Preserve Regression Evidence
 
-Don't use `test.skip` to hide problems. Either fix the test or delete it.
+When fixing a bug, reproduce the externally observable failure with a test when practical, then keep that test after the fix. Add nearby cases only when they share the same risky condition or root cause; do not turn “bugs cluster” into exhaustive permutation testing.
 
-```ts
-// Bad - hiding a problem
-test.skip("async operation", () => {
-  // flaky, fix later
-});
+A regression test should fail for the original defect and pass for the intended behavior. Avoid assertions tied only to the implementation that happened to contain the bug.
 
-// Good - either fix it or document why it's skipped
-test.skip("cache invalidation - requires Redis (see CONTRIBUTING.md)", () => {
-});
-```
+## T4: Keep One Behavior Per Test
 
-## T5: Test Boundary Conditions
+“One behavior” is more useful than “one assertion.” Multiple assertions are appropriate when they jointly describe one outcome; split a test when it contains unrelated actions, contracts, or reasons to fail.
 
-Bugs congregate at boundaries. Test them explicitly.
+Use test names that state the scenario and expected behavior. Keep setup focused on the behavior under test so failures remain easy to diagnose.
 
 ```ts
-test("pagination boundaries", () => {
-  const items = Array.from({ length: 100 }, (_, i) => i);
+test("activation records the active state and activation time", () => {
+  const user = createUser();
+  const activatedAt = new Date("2026-09-14T10:00:00Z");
 
-  // First page
-  expect(paginate(items, 1, 10)).toEqual(items.slice(0, 10));
+  user.activate(activatedAt);
 
-  // Last page
-  expect(paginate(items, 10, 10)).toEqual(items.slice(90, 100));
-
-  // Beyond last page
-  expect(paginate(items, 11, 10)).toEqual([]);
-
-  // Page zero (invalid)
-  expect(() => paginate(items, 0, 10)).toThrow(RangeError);
-
-  // Empty list
-  expect(paginate([], 1, 10)).toEqual([]);
-});
-```
-
-## T6: Exhaustively Test Near Bugs
-
-When you find a bug, write tests for all similar cases. Bugs cluster.
-
-```ts
-// Found bug: off-by-one in date calculation
-// Now test ALL date boundaries
-test("month boundaries", () => {
-  expect(lastDayOfMonth(2024, 1)).toBe(31); // January
-  expect(lastDayOfMonth(2024, 2)).toBe(29); // Leap year February
-  expect(lastDayOfMonth(2023, 2)).toBe(28); // Non-leap February
-  expect(lastDayOfMonth(2024, 4)).toBe(30); // 30-day month
-  expect(lastDayOfMonth(2024, 12)).toBe(31); // December
-});
-```
-
-## T7: Patterns of Failure Are Revealing
-
-When tests fail, look for patterns. They often point to deeper issues.
-
-```ts
-// If all async tests fail intermittently,
-// the problem isn't the tests—it's the async handling
-```
-
-## T8: Test Coverage Patterns Can Be Revealing
-
-Look at which code paths are untested. Often they reveal design problems.
-
-```ts
-// If you can't easily test a function, it probably does too much
-// Refactor for testability
-```
-
-## T9: Tests Should Be Fast
-
-Slow tests don't get run. Keep unit tests under 100ms each.
-
-```ts
-// Bad - hits real database
-test("user creation", async () => {
-  const db = await connectToDatabase(); // Slow!
-  const user = await db.createUser("Alice");
-  expect(user.name).toBe("Alice");
-});
-
-// Good - uses mock or in-memory
-test("user creation", async () => {
-  const db = new InMemoryDatabase();
-  const user = await db.createUser("Alice");
-  expect(user.name).toBe("Alice");
-});
-```
-
-## Test Organization
-
-### F.I.R.S.T. Principles
-
-- **Fast**: Tests should run quickly
-- **Independent**: Tests shouldn't depend on each other
-- **Repeatable**: Same result every time, any environment
-- **Self-Validating**: Pass or fail, no manual inspection
-- **Timely**: Written before or with the code, not after
-
-### One Concept Per Test
-
-```ts
-// Bad - testing multiple things
-test("user", () => {
-  const user = new User("Alice", "alice@example.com");
-  expect(user.name).toBe("Alice");
-  expect(user.email).toBe("alice@example.com");
-  expect(user.isValid()).toBe(true);
-  user.activate();
   expect(user.isActive).toBe(true);
-});
-
-// Good - one concept each
-test("user stores name", () => {
-  const user = new User("Alice", "alice@example.com");
-  expect(user.name).toBe("Alice");
-});
-
-test("user stores email", () => {
-  const user = new User("Alice", "alice@example.com");
-  expect(user.email).toBe("alice@example.com");
-});
-
-test("new user is valid", () => {
-  const user = new User("Alice", "alice@example.com");
-  expect(user.isValid()).toBe(true);
-});
-
-test("user can be activated", () => {
-  const user = new User("Alice", "alice@example.com");
-  user.activate();
-  expect(user.isActive).toBe(true);
+  expect(user.activatedAt).toEqual(activatedAt);
 });
 ```
 
-## Quick Reference
+## T5: Make Async and Time-Based Tests Deterministic
 
-| Rule | Principle |
-|------|-----------|
-| T1 | Test everything that could break |
-| T2 | Use coverage tools |
-| T3 | Don't skip trivial tests |
-| T4 | Ignored test = ambiguity question |
-| T5 | Test boundary conditions |
-| T6 | Exhaustively test near bugs |
-| T7 | Look for patterns in failures |
-| T8 | Check coverage when debugging |
-| T9 | Tests must be fast (<100ms) |
+Await or return every asynchronous operation and assert expected rejections explicitly. Control time, randomness, environment variables, network responses, and other nondeterministic inputs at an appropriate boundary. Avoid arbitrary sleeps and retries that conceal races.
+
+Restore fake timers, spies, global stubs, and mutated process state after each test. Use the equivalent APIs from the project's runner.
+
+Before:
+
+```ts
+test("a session expires", async () => {
+  const session = new Session({ ttlMs: 100 });
+  await new Promise((resolve) => setTimeout(resolve, 110));
+
+  expect(session.isExpired()).toBe(true);
+});
+```
+
+After using Vitest's existing timer support:
+
+```ts
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+test("a session expires when its TTL elapses", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-09-14T10:00:00Z"));
+  const session = new Session({ ttlMs: 100 });
+
+  vi.advanceTimersByTime(100);
+
+  expect(session.isExpired()).toBe(true);
+});
+```
+
+## T6: Keep Tests Independent and Choose Doubles Deliberately
+
+Tests must not depend on execution order or state leaked by another test. Create or reset mutable state explicitly.
+
+Use stubs or fakes at slow or nondeterministic boundaries when a unit test is the right layer. Do not mock the subject under test or assert internal call sequences unless the interaction itself is the contract. Test adapters against a realistic integration when compatibility with a database, filesystem, service, or runtime is the risk; an in-memory fake is useful only when its semantics are trustworthy.
+
+## T7: Use Coverage as a Diagnostic
+
+Use the repository's existing coverage command and configuration. Coverage can reveal unexercised branches, but an uncovered line does not automatically justify a test, and a covered line does not prove useful behavior.
+
+Do not add a coverage tool or chase an arbitrary percentage unless the task or project policy requires it. Investigate meaningful gaps first, especially error paths and conditional branches.
+
+## T8: Treat Skips, Focused Tests, and Snapshots as Signals
+
+Do not leave `.only` or equivalent focused tests in committed code. A skip or todo should be intentional and actionable, with a concrete condition or tracking reference when the project uses them; vague “flaky, fix later” notes are not enough. Prefer placing environment-dependent behavior in the appropriate integration suite over permanently skipping it.
+
+Review snapshot differences as behavioral changes. Update a snapshot only after confirming the new output is intended, and prefer focused assertions when a broad snapshot would obscure the contract.
+
+## T9: Test Runtime and Type Contracts at the Right Layer
+
+Runtime tests cannot prove compile-time TypeScript constraints. When public type behavior matters, use the project's existing type-test mechanism, such as `expectTypeOf`, `tsd`, or checked `@ts-expect-error` cases. Test the corresponding runtime behavior separately when it also has a runtime contract.
+
+Avoid `any` in tests merely to bypass the type system. Represent untrusted inputs as `unknown` at the boundary, and use fixture builders that create valid defaults while allowing each test to override only relevant fields.
+
+## T10: Keep Feedback Fast Enough for the Test Layer
+
+Unit tests should be fast enough to run frequently, while integration and end-to-end tests may reasonably cost more. Use measured suite bottlenecks and project budgets rather than a universal per-test threshold.
+
+Do not replace a valuable integration test with a shallow mock solely for speed. Choose the cheapest test layer that still exercises the risk being protected.

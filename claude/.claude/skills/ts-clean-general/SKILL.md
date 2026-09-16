@@ -11,20 +11,59 @@ when_to_use: |
 
 ## Critical Rules
 
+**G3: Handle Boundary Conditions**
+
+The empty case, the single-element case, and the last index are part of the contract. Say so in the return type.
+
+```ts
+// Bad - empty input returns -Infinity
+function highestScore(scores: number[]): number {
+  return Math.max(...scores);
+}
+
+// Good - the caller cannot ignore the empty case
+function highestScore(scores: number[]): number | null {
+  return scores.length === 0 ? null : Math.max(...scores);
+}
+```
+
 **G5: DRY (Don't Repeat Yourself)**
 
 Every piece of knowledge has one authoritative representation.
 
 ```ts
-// Bad - duplication
-const taxRate = 0.0825;
+// Bad - one fact, spelled three times
 const caTotal = subtotal * 1.0825;
 const nyTotal = subtotal * 1.07;
 
-// Good - single source of truth
-const TAX_RATES: Record<string, number> = { CA: 0.0825, NY: 0.07 };
-function calculateTotal(subtotal: number, state: string): number {
+// Good - the table is the single source of truth, keys included
+const TAX_RATES = { CA: 0.0825, NY: 0.07 } as const;
+type TaxedState = keyof typeof TAX_RATES;
+
+function calculateTotal(subtotal: number, state: TaxedState): number {
   return subtotal * (1 + TAX_RATES[state]);
+}
+```
+
+`Record<string, number>` would claim every string key yields a number, so `"TX"` would type-check and return `NaN`. Deriving the key type from the data makes it a compile error.
+
+**G9: Delete Dead Code**
+
+Unreachable branches, unused exports, commented-out blocks. Git remembers them; readers should not have to.
+
+```ts
+type Status = "active" | "closed";
+
+// Bad - the third branch outlived the variant it handled
+function label(status: Status): string {
+  if (status === "active") return "Active";
+  if (status === "closed") return "Closed";
+  return "Pending";
+}
+
+// Good
+function label(status: Status): string {
+  return status === "active" ? "Active" : "Closed";
 }
 ```
 
@@ -62,38 +101,25 @@ function calculatePay(employee: {
   return 0;
 }
 
-// Good - open/closed principle
-interface Employee {
-  calculatePay(): number;
-}
+// Good - each variant carries exactly its own fields
+type Employee =
+  | { kind: "salaried"; salary: number }
+  | { kind: "hourly"; hours: number; rate: number }
+  | { kind: "commissioned"; base: number; commission: number };
 
-class SalariedEmployee implements Employee {
-  constructor(private readonly salary: number) {}
-  calculatePay(): number {
-    return this.salary;
-  }
-}
-
-class HourlyEmployee implements Employee {
-  constructor(
-    private readonly hours: number,
-    private readonly rate: number,
-  ) {}
-  calculatePay(): number {
-    return this.hours * this.rate;
-  }
-}
-
-class CommissionedEmployee implements Employee {
-  constructor(
-    private readonly base: number,
-    private readonly commission: number,
-  ) {}
-  calculatePay(): number {
-    return this.base + this.commission;
+function calculatePay(employee: Employee): number {
+  switch (employee.kind) {
+    case "salaried":
+      return employee.salary;
+    case "hourly":
+      return employee.hours * employee.rate;
+    case "commissioned":
+      return employee.base + employee.commission;
   }
 }
 ```
+
+In TypeScript the discriminated union is the polymorphism. The optional fields in the bad version are what forced every read through `?? 0`; the union deletes both the optionals and the defaults. Add a fourth variant and the switch no longer returns `number` on every path, so the build breaks at the one place that must change.
 
 **G25: Replace Magic Numbers with Named Constants**
 
