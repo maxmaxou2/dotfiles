@@ -36,7 +36,6 @@ Tool Rules
 - NO redundant reads. Record signal, don't cycle.
 
 Output Format (Markdown)
-- Speak caveman (full). Headings/paths exact.
 
 # Repository scout report
 ## Detected stack (Lang, Framework, Build, Deploy + file paths)

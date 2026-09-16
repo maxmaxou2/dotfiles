@@ -111,8 +111,6 @@ stows only the declarative half:
   so they ride along in the diffs.
 - `codex/.codex/hooks.json` — the code-review-graph `PostToolUse`/`SessionStart`
   hooks and the jaynalerts `PermissionRequest` hook.
-- `codex/.codex/agents/*.toml` — the cavecrew subagents, mirroring
-  `claude/.claude/agents/`.
 - `codex/.codex/rules/default.rules` — the command allowlist. Codex appends a
   `prefix_rule(...)` here each time you approve a command, so this file grows
   through the symlink into this repo.

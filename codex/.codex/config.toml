@@ -36,9 +36,6 @@ trust_level = "trusted"
 [projects."/Users/maxence/src/elite-connect"]
 trust_level = "trusted"
 
-[projects."/Users/maxence/src/jayn-caveman"]
-trust_level = "trusted"
-
 [projects."/Users/maxence/src/jayn-landing"]
 trust_level = "trusted"
 
@@ -119,6 +116,10 @@ last_revision = "340e33aef211d95769d252324854497af871dafe"
 source_type = "git"
 source = "https://github.com/anthropics/claude-plugins-official.git"
 
+[marketplaces.ponytail]
+source_type = "git"
+source = "https://github.com/DietrichGebert/ponytail.git"
+
 [plugins."agentmemory@agentmemory"]
 enabled = true
 
@@ -138,6 +139,9 @@ enabled = true
 enabled = true
 
 [plugins."swift-lsp@claude-plugins-official"]
+enabled = true
+
+[plugins."ponytail@ponytail"]
 enabled = true
 
 [notice]

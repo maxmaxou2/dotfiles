@@ -50,4 +50,4 @@ tokens: total=<n> (in=<n> out=<n> reason=<n>) cost=$<n> | priciest session: <id>
 loops: <count> (worst: <tool> x<n> in session <id>)
 errors: <count> (<tool>:<n>, ...)
 stack-misuse: <none | raw-bash-heavy: <n> cat/grep/find calls, ctx_execute used: yes/no>
-top waste signal: <one line caveman (full)>
+top waste signal: <one line>

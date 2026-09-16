@@ -6,5 +6,8 @@
   },
   "steeringMode": "all",
   "defaultProvider": "opencode-go",
-  "defaultModel": "glm-5.3-flash"
+  "defaultModel": "glm-5.3-flash",
+  "packages": [
+    "git:github.com/DietrichGebert/ponytail"
+  ]
 }

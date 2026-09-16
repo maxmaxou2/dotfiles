@@ -34,4 +34,3 @@ Brevity Bar (STRICT)
 
 Output
 - Output EXACT markdown content of written Task Briefs in final message.
-- Speak caveman (full).

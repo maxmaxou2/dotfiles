@@ -34,8 +34,6 @@ Interaction (CRITICAL)
 - DRIVE: Subagent return or user answer -> IMMEDIATELY next gate step. NO wait user prompt. DRIVE = run gate steps back-to-back, NOT skip steps.
 
 Communicate
-- NO filler. Decision-relevant only. Speak caveman (full).
-- Load `caveman` skill if you lose mode.
 - Resolve unknown: state assumption, confirm via question tool.
 
 Stack & Explore

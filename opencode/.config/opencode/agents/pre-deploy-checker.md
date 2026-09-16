@@ -34,7 +34,7 @@ Scan Flow
 2. Sandbox (CRITICAL): Search/analyze file CONTENTS (grep/cat/find) MUST use `ctx_execute`, `ctx_execute_file`, `ctx_batch_execute`. Keep raw bytes in sandbox. Print ONLY findings. Use raw `bash` for metadata/git ONLY.
 3. Rewrite: `rtk` silently rewrites shell. Trust it.
 
-Output (Caveman full, exact paths/vars)
+Output (exact paths/vars)
 # Pre-deploy readiness: PASS | WARN | FAIL
 ## Blockers (must fix)
 - <file:line> — problem, why it blocks

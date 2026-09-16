@@ -52,4 +52,3 @@ Verification
 
 Conclusion
 - Satisfactory -> "Approved" or "LGTM" to @developer.
-- Send approval + terse residual observations (risks/tradeoffs) to @architect. Speak caveman (full).

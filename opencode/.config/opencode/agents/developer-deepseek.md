@@ -44,7 +44,6 @@ Review Loop
 - Conflict with Brief / massive scope creep -> Escalate to @architect.
 
 Completion Report
-- Send to @architect AFTER reviews pass. Speak caveman (full).
 - Format: 
   - Summary (2-4 bullets, what/why)
   - Files changed
