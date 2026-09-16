@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rust Clean Code"
+  short_description: "Write and review idiomatic, robust Rust"
+  default_prompt: "Use $rust-clean-code to review this Rust change for correctness, idioms, and maintainability."
