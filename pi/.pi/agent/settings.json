@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.85.1",
+  "lastChangelogVersion": "0.86.1",
   "theme": "dark",
   "images": {
     "blockImages": false
@@ -9,5 +9,14 @@
   "defaultModel": "glm-5.3-flash",
   "packages": [
     "git:github.com/DietrichGebert/ponytail"
-  ]
+  ],
+  "compaction": {
+    "enabled": true,
+    "modelOverrides": {
+      "opencode-go/glm-5.3-flash": {
+        "reserveTokens": 900000,
+        "keepRecentTokens": 12000
+      }
+    }
+  }
 }
