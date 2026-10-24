@@ -14,6 +14,7 @@ CONFIG_DIR="$HOME/.config/restic"
 STATE_DIR="$HOME/.local/state/restic-backup"
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 MAINTENANCE_STAMP="$STATE_DIR/last-maintenance"
+PID_FILE="$STATE_DIR/running.pid"
 MAINTENANCE_INTERVAL_DAYS=7
 
 # shellcheck source=env.example
@@ -54,6 +55,20 @@ report() {
     printf '%s %s exit=%s\n' "$(date '+%F %T')" "$job" "$status" >>"$STATE_DIR/history.log"
 }
 
+# launchd never overlaps its own runs, but a manual run or a long first upload
+# can meet an hourly one, which would re-read and re-upload everything in flight.
+# The PID must still belong to this script: after a crash it may be reused.
+claim_run() {
+    local pid
+    pid="$(cat "$PID_FILE" 2>/dev/null)"
+    if [ -n "$pid" ] && ps -p "$pid" -o command= 2>/dev/null | grep -q restic-backup; then
+        echo "backup run $pid still in progress, skipping"
+        exit 0
+    fi
+    echo $$ >"$PID_FILE"
+    trap 'rm -f "$PID_FILE"' EXIT
+}
+
 run() {
     local job="$1" check_url="$2" status
     local log="$STATE_DIR/$job.log"
@@ -71,12 +86,14 @@ run() {
 
 case "${1:-}" in
 "")
+    claim_run
     run backup "$HC_BACKUP_URL" || exit
     if maintenance_due; then
         run maintain "$HC_MAINTAIN_URL" && touch "$MAINTENANCE_STAMP"
     fi
     ;;
 maintain)
+    claim_run
     run maintain "$HC_MAINTAIN_URL" && touch "$MAINTENANCE_STAMP"
     ;;
 *)

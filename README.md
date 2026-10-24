@@ -218,6 +218,8 @@ What is skipped is in `backup/excludes.txt`: `~/Library`, toolchains, package ca
   no successful maintenance for 9. A failed run is only logged there, since a laptop
   is often offline. restic's exit code 3 (some files unreadable, typically a lost
   Full Disk Access grant) counts as a failure.
+- **Runs never overlap.** A run that starts while another is still going (the first
+  full upload, a manual run) exits straight away and leaves the next hour to catch up.
 - Logs: `~/.local/state/restic-backup/` (`backup.log`, `maintain.log`, `history.log`).
 
 Restore:
@@ -257,9 +259,8 @@ Adding a Mac (each machine gets its own Storage Box sub-account, repository and 
    restic-backup backup "$HOME" --dry-run -vv --one-file-system --exclude-caches \
      --exclude-file backup/excludes.txt --exclude-file ~/.config/restic/excludes.local
    ```
-8. `caffeinate -i restic-backup` for the first full upload (mains power, lid open), and
-   only then `make backup` again to schedule the hourly job, so the first hourly run
-   does not start a second full upload alongside it.
+8. `make backup` again to schedule the hourly job, then `caffeinate -i restic-backup` for
+   the first full upload (mains power, lid open).
 
 ### Machine-local settings (not in this repo)
 
