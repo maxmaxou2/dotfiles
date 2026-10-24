@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Template, not a usable plist. `make backup` substitutes this machine's paths
+  and writes the result to ~/Library/LaunchAgents/local.restic-backup.plist.
+  The job starts the launcher rather than the script: the launcher is what holds
+  Full Disk Access (see launcher.c).
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>local.restic-backup</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>@LAUNCHER@</string>
+    <string>/bin/bash</string>
+    <string>@SCRIPT@</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>@PATH@</string>
+    <key>HOME</key>
+    <string>@HOME@</string>
+  </dict>
+
+  <key>StartInterval</key>
+  <integer>3600</integer>
+
+  <key>StandardOutPath</key>
+  <string>@HOME@/.local/state/restic-backup/launchd.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>@HOME@/.local/state/restic-backup/launchd.log</string>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

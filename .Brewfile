@@ -66,6 +66,8 @@ brew "qpdf"
 brew "rclone"
 # In-memory data store
 brew "redis", restart_service: :changed
+# Fast, encrypted, deduplicated backups
+brew "restic"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
 # CLI proxy to minimize LLM token consumption

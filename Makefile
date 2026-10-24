@@ -1,4 +1,4 @@
-.PHONY: help setup xcode-clt brew stow jaynalerts context-mode agentmemory litellm restart-litellm pi codex tmux-plugins verify-symlinks
+.PHONY: help setup xcode-clt brew stow jaynalerts context-mode agentmemory litellm restart-litellm pi codex tmux-plugins backup verify-symlinks
 
 # Private repo under the jaynlabs org, so SSH (HTTPS would need a PAT anyway).
 # A fresh Mac therefore needs its key on GitHub before `make setup` reaches here.
@@ -10,6 +10,8 @@ STOW_PACKAGES   ?= clang-format claude codex conda hammerspoon karabiner litellm
 BREW_PREFIX     ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
 # launchd jobs inherit almost nothing, so the plists carry an explicit PATH.
 LAUNCHD_PATH    ?= $(HOME)/.local/bin:$(BREW_PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
+# Full Disk Access is granted to this exact binary (see backup/launcher.c).
+RESTIC_LAUNCHER ?= $(HOME)/.local/bin/restic-backup-launcher
 
 help:
 	@echo "Targets:"
@@ -24,6 +26,7 @@ help:
 	@echo "  pi               Install the pi coding agent (npm) and link its stowed config"
 	@echo "  codex            Install the Codex CLI (npm) and link its stowed config"
 	@echo "  tmux-plugins     Bootstrap TPM and install tmux plugins"
+	@echo "  backup           Install restic and schedule the hourly backup of HOME (needs ~/.config/restic/env)"
 	@echo "  verify-symlinks  Check that critical claude/opencode configs are symlinked into HOME"
 
 setup: xcode-clt brew stow jaynalerts context-mode agentmemory litellm pi codex tmux-plugins verify-symlinks
@@ -209,6 +212,45 @@ tmux-plugins:
 		export TMUX_PLUGIN_MANAGER_PATH="$(HOME)/.tmux/plugins/"; \
 		$(HOME)/.tmux/plugins/tpm/bin/install_plugins; \
 	fi
+
+# Recompiling changes the launcher's code signature, which silently voids its
+# Full Disk Access grant, so it is rebuilt only when launcher.c changes.
+$(RESTIC_LAUNCHER): backup/launcher.c
+	@mkdir -p $(@D)
+	cc -O2 -Wall -o $@ $<
+	@echo "ACTION REQUIRED: System Settings > Privacy & Security > Full Disk Access > +,"
+	@echo "                 then Cmd-Shift-G and paste $@"
+
+# Not part of `setup`: it needs this machine's repository, credentials and
+# healthchecks URLs in ~/.config/restic/env, which never live in this repo.
+backup: $(RESTIC_LAUNCHER)
+	@command -v restic >/dev/null 2>&1 || brew install restic
+	@mkdir -p $(HOME)/.config/restic $(HOME)/.local/state/restic-backup $(HOME)/Library/LaunchAgents
+	@chmod 700 $(HOME)/.config/restic
+	@ln -sf $(CURDIR)/backup/restic-backup.sh $(HOME)/.local/bin/restic-backup
+	@touch $(HOME)/.config/restic/excludes.local
+	@if [ ! -f $(HOME)/.config/restic/password ]; then \
+		(umask 077; openssl rand -base64 32 > $(HOME)/.config/restic/password); \
+		echo "ACTION REQUIRED: save ~/.config/restic/password in your password manager."; \
+		echo "                 Without it nobody, you included, can decrypt the backup."; \
+	fi
+	@if [ ! -f $(HOME)/.config/restic/env ]; then \
+		(umask 077; cp $(CURDIR)/backup/env.example $(HOME)/.config/restic/env); \
+	fi
+	@if grep -q REPLACE_ $(HOME)/.config/restic/env; then \
+		echo "ACTION REQUIRED: fill in the REPLACE_ values in ~/.config/restic/env, then re-run 'make backup'"; \
+		exit 1; \
+	fi
+	@sed -e "/<!--/,/-->/d" -e "s|@HOME@|$(HOME)|g" -e "s|@PATH@|$(LAUNCHD_PATH)|g" \
+		-e "s|@LAUNCHER@|$(RESTIC_LAUNCHER)|g" -e "s|@SCRIPT@|$(CURDIR)/backup/restic-backup.sh|g" \
+		$(CURDIR)/backup/local.restic-backup.plist.in > $(HOME)/Library/LaunchAgents/local.restic-backup.plist
+	@launchctl bootout gui/$$(id -u)/local.restic-backup 2>/dev/null || true
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+		launchctl print gui/$$(id -u)/local.restic-backup >/dev/null 2>&1 || break; \
+		sleep 1; \
+	done
+	@launchctl bootstrap gui/$$(id -u) $(HOME)/Library/LaunchAgents/local.restic-backup.plist 2>/dev/null || launchctl load $(HOME)/Library/LaunchAgents/local.restic-backup.plist
+	@echo "Hourly backup scheduled. First time on this Mac: 'restic-backup init', then 'caffeinate -i restic-backup'."
 
 # ~/.claude and ~/.config/opencode become real directories as soon as anything
 # else writes into them, so check the stowed files rather than the directories.

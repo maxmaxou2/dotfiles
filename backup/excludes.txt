@@ -1,0 +1,35 @@
+# restic exclude patterns shared by every machine. Personal paths go in
+# ~/.config/restic/excludes.local instead. Directories tagged with CACHEDIR.TAG
+# (cargo target/, pytest/ruff/mypy caches) are skipped by --exclude-caches.
+
+# App data, caches and Docker/VM images: reinstall and sign in again rather than restore.
+$HOME/Library
+$HOME/.Trash
+$HOME/.cache
+$HOME/.docker
+$HOME/.orbstack
+
+# Toolchains, package caches and models, all re-downloadable.
+$HOME/.bun
+$HOME/.cargo
+$HOME/.rustup
+$HOME/.npm
+$HOME/.expo
+$HOME/.ollama
+$HOME/.vscode/extensions
+$HOME/.local/lib
+$HOME/.local/share/uv
+$HOME/.local/share/nvim
+$HOME/.local/share/claude
+$HOME/.local/state
+
+# Per-project dependencies and build output.
+node_modules
+.venv
+venv
+__pycache__
+.next
+
+# Logs churn hourly and are worthless after a restore.
+*.log
+.DS_Store
