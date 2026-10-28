@@ -1,4 +1,4 @@
-model = "gpt-5.6-sol"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "xhigh"
 approvals_reviewer = "auto_review"
 notify = ["jaynalerts", "codex-hook"]
@@ -54,6 +54,9 @@ trust_level = "trusted"
 [projects."/Users/maxence/src/jaynshare-v2"]
 trust_level = "trusted"
 
+[projects."/Users/maxence/src/jayn-knowledge"]
+trust_level = "trusted"
+
 
 [mcp_servers.code-review-graph]
 command = "uvx"
@@ -68,10 +71,12 @@ type = "stdio"
 notifications = false
 status_line = ["model-with-reasoning", "current-dir", "context-used", "weekly-limit", "five-hour-limit"]
 status_line_use_colors = true
+screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 "gpt-5.6-sol" = 1
 gpt-6-astra = 4
+"gpt-6.1-sol" = 4
 
 [hooks.state]
 
@@ -85,24 +90,42 @@ enabled = false
 
 [hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:pre_tool_use:0:0"]
 trusted_hash = "sha256:72fade31ac7a95e92bef200e83eae770f6961a9f6ff9f12596c3bccc1dfc566e"
+trusted_content_hash = "sha256:c9a726160067cf406a65d083888f9d9313ff1a6965e8813392f4dd07af6b9c12"
 
 [hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:post_tool_use:0:0"]
 trusted_hash = "sha256:1b8a64f14c07f7f42d9e22ba4b4907027dbd7e4dc5d4db6c34c53b9263b2620b"
+trusted_content_hash = "sha256:c9a726160067cf406a65d083888f9d9313ff1a6965e8813392f4dd07af6b9c12"
 
 [hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:pre_compact:0:0"]
 trusted_hash = "sha256:2d124c2cc70523587a243fb166c16aa343b2fca616fd9f77bd44ab74a75bcfae"
+trusted_content_hash = "sha256:c9a726160067cf406a65d083888f9d9313ff1a6965e8813392f4dd07af6b9c12"
 
 [hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:session_start:0:0"]
 trusted_hash = "sha256:7b09a5a4e6f0bd5f6c7441a26e91fd060c1b4481028cc26aded89331ef90a8b0"
+trusted_content_hash = "sha256:c9a726160067cf406a65d083888f9d9313ff1a6965e8813392f4dd07af6b9c12"
 
 [hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:user_prompt_submit:0:0"]
 trusted_hash = "sha256:8f9e09b1ebf8c8b80a16c1c50203868d851c33942ce8e7cc1b26c4e4b6de891d"
+trusted_content_hash = "sha256:c9a726160067cf406a65d083888f9d9313ff1a6965e8813392f4dd07af6b9c12"
 
 [hooks.state."agentmemory@agentmemory:hooks/hooks.codex.json:stop:0:0"]
 trusted_hash = "sha256:b9dfa7fe6d1c0cb5d9c539f73f44f7239043bfc2751126c317360b1dde249a3a"
+trusted_content_hash = "sha256:c9a726160067cf406a65d083888f9d9313ff1a6965e8813392f4dd07af6b9c12"
 
 [hooks.state."/Users/maxence/.codex/hooks.json:permission_request:0:0"]
 trusted_hash = "sha256:c1723a01b67f918c331a806feba171453c21b914bcb4654c35c5d7abece812ef"
+
+[hooks.state."ponytail@ponytail:hooks/claude-codex-hooks.json:session_start:0:0"]
+trusted_hash = "sha256:defea43402fc8edba23234c694a1117cf80efc2da38968a40a1004cd9d63f725"
+trusted_content_hash = "sha256:660cb468ad1eb1733ca5f3c2fcd11a46c745da07fc491deee91ffde62589483d"
+
+[hooks.state."ponytail@ponytail:hooks/claude-codex-hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:5aa5ec474e0bb546f207794993b37fdf7507e54a64e09216be164c5b7b42a197"
+trusted_content_hash = "sha256:660cb468ad1eb1733ca5f3c2fcd11a46c745da07fc491deee91ffde62589483d"
+
+[hooks.state."ponytail@ponytail:hooks/claude-codex-hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:5b2c1dfa8c7ecc5e8881c8e69479f65d46ed727e0bc5b8e7b4553cee9e5c3daf"
+trusted_content_hash = "sha256:660cb468ad1eb1733ca5f3c2fcd11a46c745da07fc491deee91ffde62589483d"
 
 [marketplaces.agentmemory]
 last_updated = "2026-08-21T08:11:22Z"
