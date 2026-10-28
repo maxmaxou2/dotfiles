@@ -359,13 +359,9 @@ My Hammerspoon setup includes several productivity-enhancing features:
 - Application window maximization (fake fullscreen) using ctrl + cmd + F
 
 ### Multi-Display Management
-- Intelligent window management for multiple displays
-- Automatically saves window positions when disconnecting external monitors
-- Restores window layouts when reconnecting displays
-- Screen swapping functionality with `ctrl + cmd + m`
-- Maintains application workspace consistency across different display configurations
+- Move the focused window to the next display (maximized) with `ctrl + cmd + m`
 
-This setup ensures a smooth workflow when transitioning between single and multi-monitor setups while providing quick access to applications and keyboard input visualization when needed.
+This setup provides quick access to applications and keyboard input visualization when needed.
 
 ## Keymap Cheatsheet
 

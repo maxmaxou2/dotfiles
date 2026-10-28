@@ -9,19 +9,12 @@ obj.homepage = ""
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 -- Bundle IDs
-local VSCODE_BUNDLE = "com.microsoft.VSCode"
 local GHOSTTY_BUNDLE = "com.mitchellh.ghostty"
 local MAIL_BUNDLE = "com.apple.mail"
 local CALENDAR_BUNDLE = "com.apple.iCal"
 
 -- Pair definitions
 local PAIRS = {
-	vscode_ghostty = {
-		a = { name = "VS Code", bundle = VSCODE_BUNDLE },
-		b = { name = "Ghostty", bundle = GHOSTTY_BUNDLE },
-		settingsKey = "AppKeybindings.lastFocused.vscode_ghostty",
-		hotkey = "0",
-	},
 	mail_calendar = {
 		a = { name = "Mail", bundle = MAIL_BUNDLE },
 		b = { name = "Calendar", bundle = CALENDAR_BUNDLE },
@@ -44,8 +37,13 @@ local function isFrontmostBundle(bundle)
 	return frontApp and frontApp:bundleID() == bundle
 end
 
+-- Not hs.application.get: when nothing matches, it scans every window title of every app
+local function runningApp(bundle)
+	return hs.application.applicationsForBundleID(bundle)[1]
+end
+
 local function appIsRunning(bundle)
-	return hs.application.get(bundle) ~= nil
+	return runningApp(bundle) ~= nil
 end
 
 local function focusBundle(bundle)
@@ -115,7 +113,7 @@ function obj:init()
 
 	local function cycleObsidian()
 		local bundleID = "md.obsidian"
-		local app = hs.application.get(bundleID)
+		local app = runningApp(bundleID)
 
 		if not app then
 			hs.application.launchOrFocusByBundleID(bundleID)
@@ -148,6 +146,7 @@ function obj:init()
 	-- Hotkeys ---------------------------------------------------------------
 	-- Single-app quick launchers (your existing ones)
 	local singleHotkeys = {
+		["0"] = { bundleID = GHOSTTY_BUNDLE },
 		["8"] = { name = "TickTick" },
 		["e"] = { name = "Finder" },
 		["a"] = { name = "Preview" },
