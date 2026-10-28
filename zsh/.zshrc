@@ -40,3 +40,9 @@ if [[ -n ${ZSH_VERSION-} ]] && command -v jaynalerts >/dev/null 2>&1; then
   add-zsh-hook precmd __jaynalerts_precmd
 fi
 # jaynalerts end
+
+# opencode
+export PATH=/Users/maxence/.opencode/bin:$PATH
+
+# Scaleway CLI autocomplete initialization.
+eval "$(scw autocomplete script shell=zsh)"
